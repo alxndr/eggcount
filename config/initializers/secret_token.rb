@@ -9,4 +9,4 @@
 
 # Make sure your secret_key_base is kept private
 # if you're sharing your code publicly.
-Eggcount::Application.config.secret_key_base = '46b59b97917be89bf9f7232a1c2414443ff9c60f8e63536d43e313529632f80571bf07578d5b002ec1e951162a2105d618a776a4841818a4552eb61c00abb030'
+Eggcount::Application.config.secret_key_base = ENV['SECRET_TOKEN']
