@@ -7,7 +7,7 @@ class DaysController < ApplicationController
   def create
     @day = Day.new(day_params)
 
-    @day.save
+    @day.save!
 
     redirect_to @day
   end
