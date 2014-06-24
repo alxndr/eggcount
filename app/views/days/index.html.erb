@@ -1,0 +1,7 @@
+<h1>Eggs!</h1>
+
+<%= render partial: 'form' -%>
+
+<p>We have <%= pluralize @days.length, 'day' %> of data.</p>
+<%= render partial: 'list', locals: { days: @days } -%>
+

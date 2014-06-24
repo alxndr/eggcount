@@ -1,0 +1,5 @@
+<ul>
+  <% days.each do |day| -%>
+    <li><%= link_to day.date, day %>: <%= pluralize day.count, 'egg' %></li>
+  <% end -%>
+</ul>

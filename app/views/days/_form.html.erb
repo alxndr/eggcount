@@ -1,0 +1,9 @@
+<%= form_for :day, url: days_path do |f| -%>
+
+  <p>What day? <%= f.date_field :date -%></p>
+
+  <p>How many? <%= f.text_field :count -%></p>
+
+  <p><button type="submit">yup</button></p>
+
+<% end -%>
