@@ -2,5 +2,5 @@ language: ruby
 rvm:
   - 2.1.2
 env:
-  SECRET_KEY_BASE=$(bundle exec rake secret)
+  SECRET_KEY_BASE=foo
 bundler_args: --without production
