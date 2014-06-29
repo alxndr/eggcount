@@ -1,4 +1,8 @@
 language: ruby
 rvm:
   - 2.1.2
+before_script:
+  - psql -c 'create database eggcount_test;' -U postgres
+env:
+  - SECRET_TOKEN=$(bundle exec rake secret)
 bundler_args: --without production
