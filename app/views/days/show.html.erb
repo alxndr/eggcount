@@ -1,1 +1,5 @@
 <p><%= @day.date -%>: <%= pluralize @day.count, 'egg' %>.</p>
+
+<%= render 'form' -%>
+
+<p><%= link_to 'back', '/' -%></p>

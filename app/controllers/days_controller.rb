@@ -2,18 +2,30 @@ class DaysController < ApplicationController
 
   def index
     @days = Day.all
-  end
-
-  def create
-    @day = Day.new(day_params)
-
-    @day.save!
-
-    redirect_to @day
+    @day = Day.new
   end
 
   def show
     @day = Day.find(params[:id])
+  end
+
+  def create
+    @day = Day.new(day_params)
+    @day.save!
+    redirect_to @day
+  end
+
+  def edit
+    @day = Day.find(params[:id])
+  end
+
+  def update
+    @day = Day.find(params[:id])
+    if @day.update(day_params)
+      redirect_to @day
+    else
+      render 'edit'
+    end
   end
 
   private
