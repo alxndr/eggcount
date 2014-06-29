@@ -8,10 +8,8 @@ development:
 
 test:
   adapter: postgresql
-  encoding: unicode
-  database: eggcount_test
-  pool: 5
-  password:
+  database: travis_ci_test
+  username: postgres
 
 production:
   adapter: postgresql
