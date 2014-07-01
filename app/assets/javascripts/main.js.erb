@@ -1,0 +1,44 @@
+window.daysData = <%= Day.all.to_json %>;
+
+function movingAverage(array, index, until) {
+  var start = index + until + 1;
+  if (index + until < 0) {
+    start = 0;
+  }
+  var values = array.slice(start, index + 1).map(function(day) { return day.count; });
+  return values.reduce(function(sum, n) { return sum + n; }, 0) / values.length;
+}
+
+var chartData = daysData.map(function(dayData, index, cD) {
+  return {
+    date: dayData.date,
+    count: dayData.count,
+    movingAvgOneWeek: movingAverage(cD, index, -7),
+    movingAvgOneMonth: movingAverage(cD, index, -30)
+  };
+});
+
+var chartWidth = 600;
+var barHeight = 20;
+
+var barWidth = d3.scale.linear()
+  .domain([0, 20])
+  .range([0, chartWidth]);
+
+var chart = d3.select('#chart')
+  .attr('width', chartWidth)
+  .attr('height', barHeight * chartData.length);
+
+var bar = chart.selectAll('g').data(chartData).enter().append('g')
+  .attr('transform', function(_data, i) { return 'translate(0,' + i * barHeight + ')'; });
+
+bar.append('rect')
+  .attr('width', function(data) { return barWidth(data.count); })
+  .attr('height', barHeight - 1);
+
+bar.append('text')
+  .attr('x', function(data) { return barWidth(data.count) + 3; })
+  .attr('y', barHeight / 2)
+  .attr('dy', '.35em')
+  .text(function(data) { return data.count; });
+

@@ -7,8 +7,13 @@
   border: 1px solid black;
 }
 
-#chart div {
-  width: 7em;
+#chart rect {
+  fill: #0cc;
+}
+
+#chart text {
+  fill: black;
+  font: 12px sans-serif;
 }
 
 ul.calendar {
