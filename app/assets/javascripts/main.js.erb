@@ -19,26 +19,28 @@ var chartData = daysData.map(function(dayData, index, cD) {
 });
 
 var chartWidth = 600;
-var barHeight = 20;
-
-var barWidth = d3.scale.linear()
-  .domain([0, 20])
-  .range([0, chartWidth]);
+var chartHeight = 400;
+var barWidth = chartWidth / chartData.length;
+var barHeight = d3.scale.linear()
+  .range([chartHeight - 15, 0])
+  .domain([0, d3.max(chartData, function(data) { return data.count; })]);
 
 var chart = d3.select('#chart')
   .attr('width', chartWidth)
-  .attr('height', barHeight * chartData.length);
+  .attr('height', chartHeight);
 
 var bar = chart.selectAll('g').data(chartData).enter().append('g')
-  .attr('transform', function(_data, i) { return 'translate(0,' + i * barHeight + ')'; });
+  .attr('transform', function(_data, i) { return 'translate(' + i * barWidth + ', 0)'; });
 
 bar.append('rect')
-  .attr('width', function(data) { return barWidth(data.count); })
-  .attr('height', barHeight - 1);
+  .attr('y', function(data) { return barHeight(data.count); })
+  .attr('height', function(data) { return chartHeight - barHeight(data.count); })
+  .attr('width', barWidth - 1);
 
 bar.append('text')
-  .attr('x', function(data) { return barWidth(data.count) + 3; })
-  .attr('y', barHeight / 2)
-  .attr('dy', '.35em')
+  .attr('x', 2)
+  .attr('y', function(data) { return barHeight(data.count) + 3; })
+  .attr('width', barWidth - 1)
+  .attr('dy', '.75em')
   .text(function(data) { return data.count; });
 
