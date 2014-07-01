@@ -2,6 +2,6 @@
 
 <%= render 'form' -%>
 
-<p>We have <%= pluralize @days.length, 'day' %> of data.</p>
+<svg id="chart"></svg>
 
 <%= render 'list', days: @days -%>

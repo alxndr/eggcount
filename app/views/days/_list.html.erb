@@ -1,5 +1,8 @@
-<ul>
+<ul class="calendar">
   <% days.each do |day| -%>
-    <li><%= link_to day.date, day %>: <%= pluralize day.count, 'egg' %></li>
+    <li>
+      <div class="date"><%= link_to day.date, day %></div>
+      <div class="count"><%= pluralize day.count, 'egg' %></div>
+    </li>
   <% end -%>
 </ul>
