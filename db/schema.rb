@@ -11,14 +11,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140624034326) do
+ActiveRecord::Schema.define(version: 20140701071312) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
   create_table "days", force: true do |t|
-    t.integer  "count",      default: 0, null: false
-    t.date     "date",                   null: false
+    t.integer  "count",      null: false
+    t.date     "date",       null: false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
