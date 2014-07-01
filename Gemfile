@@ -10,7 +10,6 @@ gem 'pg'
 gem 'rails', '4.1.2'
 gem 'rails_12factor', group: :production
 gem 'sass-rails', '~> 4.0.2'
-gem 'turbolinks'
 gem 'uglifier', '>= 1.3.0'
 
 group :development, :test do
