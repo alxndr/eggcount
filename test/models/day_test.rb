@@ -19,7 +19,6 @@ class DayTest < ActiveSupport::TestCase
     day = Day.new
     day.date = Date.new
     day.save
-    puts "day count: #{day.count}"
 
     assert_not day.save, 'Saved day record without count'
   end
