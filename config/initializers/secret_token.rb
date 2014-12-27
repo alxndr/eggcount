@@ -9,4 +9,11 @@
 
 # Make sure your secret_key_base is kept private
 # if you're sharing your code publicly.
-Eggcount::Application.config.secret_key_base = ENV['SECRET_TOKEN']
+if Rails.env.production? || Rails.env.staging? || ENV["SECRET_TOKEN"]
+  unless ENV["SECRET_TOKEN"]
+    abort "No secret token found. Run export SECRET_TOKEN=$(rake secret) before starting server. Aborting"
+  end
+  Eggcount::Application.config.secret_key_base = ENV["SECRET_TOKEN"]
+elsif Rails.env.development? || Rails.env.test?
+  Eggcount::Application.config.secret_key_base = ("X" * 30)
+end
