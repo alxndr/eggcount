@@ -1,15 +1,40 @@
 (function() {
 
-  function prepareDataForHC(dayData) {
-    var month0indexed = parseInt(dayData.date.substring(5, 7), 10) - 1;
-    var day = parseInt(dayData.date.substring(8, 10), 10);
-    return [Date.UTC(1970, month0indexed, day), dayData.count];
+  function prepareDayDataForHC(attributeName) {
+    return function(dayData) {
+      var month0indexed = parseInt(dayData.date.substring(5, 7), 10) - 1;
+      var day = parseInt(dayData.date.substring(8, 10), 10);
+      return [Date.UTC(1970, month0indexed, day), dayData[attributeName]];
+    }
   }
 
   function createSeriesDatForHc(seriesData, yearData) {
     seriesData.push({
       name: yearData.year,
-      data: yearData.days.map(prepareDataForHC)
+      data: yearData.days.map(prepareDayDataForHC('count')),
+      type: 'column',
+      color: '#ddd',
+      borderWidth: 0,
+      pointPadding: 0,
+      groupPadding: 0
+    });
+    seriesData.push({
+      name: '' + yearData.year + ' 1-wk avg',
+      data: yearData.days.map(prepareDayDataForHC('avg7')),
+      type: 'line',
+      color: '#bbb'
+    });
+    seriesData.push({
+      name: '' + yearData.year + ' 1-mo avg',
+      data: yearData.days.map(prepareDayDataForHC('avg28')),
+      type: 'line',
+      color: '#5d5'
+    });
+    seriesData.push({
+      name: '' + yearData.year + ' 3-mo avg',
+      data: yearData.days.map(prepareDayDataForHC('avg84')),
+      type: 'line',
+      color: '#55d'
     });
     return seriesData;
   }
@@ -27,11 +52,11 @@
 
     function createChart(seriesData) {
       $("#chart").highcharts({
-        chart: { type: 'column' },
-        title: { text: '' },
+        title: { text: 'eggs' },
+        alignTicks: false,
         xAxis: {
           type: 'datetime',
-          dateTimeLabelFormats: { // don't display the dummy year
+          dateTimeLabelFormats: { // don't display the dummy year; it's part of data
             month: '%b',
             year: '%b'
           },
@@ -39,7 +64,8 @@
         },
         yAxis: {
           title: { text: 'eggs' },
-          min: 0
+          min: 0,
+          endOnTick: false
         },
         tooltip: {
           headerFormat: '<b>{series.name}</b><br>', // fake the year
@@ -47,10 +73,9 @@
         },
         plotOptions: {
           series: {
-            borderWidth: 0
+            animation: false
           }
         },
-
         series: seriesData,
       });
     }
