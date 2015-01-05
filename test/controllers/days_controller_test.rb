@@ -7,6 +7,8 @@ class DaysControllerTest < ActionController::TestCase
   end
 
   test 'should get index' do
+    Day.create date: Date.today, count: 2
+
     get :index
 
     assert_response :success
