@@ -1,7 +1,7 @@
 class Day < ActiveRecord::Base
 
   validates :count, presence: true
-  validates :date, presence: true # should also be unique
+  validates :date, presence: true, uniqueness: true
 
   def self.to_json_object
     year_range = (minimum(:date).year..maximum(:date).year)
