@@ -1,7 +1,7 @@
 class DaysController < ApplicationController
 
   def index
-    @days = Day.all
+    @days = Day.all.order(:date)
     @day = Day.new
   end
 
