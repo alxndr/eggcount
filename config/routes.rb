@@ -3,4 +3,8 @@ Eggcount::Application.routes.draw do
 
   resources :days, only: [:show, :create, :edit, :update]
 
+  namespace :api do
+    resources :years, only: :index # json
+  end
+
 end
