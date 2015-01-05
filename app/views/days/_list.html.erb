@@ -1,8 +1,17 @@
-<ul class="calendar">
-  <% days.each do |day| -%>
-    <li>
-      <div class="date"><%= link_to day.date, day %></div>
-      <div class="count"><%= pluralize day.count, 'egg' %></div>
-    </li>
-  <% end -%>
-</ul>
+<div class="calendar">
+  <ul>
+    <% days.chunk { |d| [d.date.year, d.date.month] }.each do |y_m, days_in_month| -%>
+      <% year, month = y_m -%>
+      <li class="month">
+        <ul>
+          <% days_in_month.each do |day| -%>
+            <li>
+              <div class="date"><%= link_to day.date, day %></div>
+              <div class="count"><%= pluralize day.count, 'egg' %></div>
+            </li>
+          <% end -%>
+        </ul>
+      </li>
+    <% end -%>
+  </ul>
+</div>

@@ -3,29 +3,22 @@
  *= require_tree .
  */
 
-#chart {
-  border: 1px solid black;
-}
-
-ul.calendar {
+.calendar ul {
   margin: 0;
   padding: 0;
   list-style: none;
+  font-size: 0.75em;
 }
 
-ul.calendar li {
-  float: left;
-  font-size: 0.7em;
-  width: 8em;
-  height: 8em;
-  background-color: #ddd;
-  text-align: center;
+.calendar .month {
+  display: inline-block;
+  vertical-align: top;
 }
 
-ul.calendar li:nth-child(even) {
-  background-color: #eee;
+.calendar .month ul {
+  display: inline-block;
 }
 
-ul.calendar li div {
-  overflow: visible;
+.calendar .month li {
+  white-space: nowrap;
 }

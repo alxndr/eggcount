@@ -1,12 +1,13 @@
-var daysData = <%= Day.to_json_object %>; // TODO replace with ajax call to json endpoint
-var years = Object.keys(daysData);
+var allDaysData = <%= Day.to_json_object %>; // TODO replace with ajax call to json endpoint
+var years = Object.keys(allDaysData);
 var seriesData = years.reduce(function(data, year) {
-  var sanitizedYearData = daysData[year].map(function(dayData) {
+  var yearData = allDaysData[year];
+  var sanitizedYearData = yearData.map(function(dayData) {
     var month0indexed = parseInt(dayData.date.substring(5, 7), 10) - 1;
     var day = parseInt(dayData.date.substring(8, 10), 10);
     return [Date.UTC(1970, month0indexed, day), dayData.count];
   });
-  data.push( {
+  data.push({
     name: year,
     data: sanitizedYearData
   });
@@ -33,11 +34,16 @@ var seriesData = years.reduce(function(data, year) {
         min: 0
       },
       tooltip: {
-        headerFormat: '<b>{series.name}</b><br>',
-        pointFormat: '{point.x:%b}: {point.y:%f}'
+        headerFormat: '<b>{series.name}</b><br>', // fake the year
+        pointFormat: '{point.x:%b}: {point.y:.0f}'
+      },
+      plotOptions: {
+        series: {
+          borderWidth: 0
+        }
       },
 
-      series: seriesData
+      series: seriesData,
     });
   });
 })(this);
