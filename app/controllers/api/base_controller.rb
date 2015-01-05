@@ -37,7 +37,7 @@ module Api
     # The singular name for the resource class based on the controller
     # @return [String]
     def resource_name
-      @resource_name ||= self.controller_name.singularize
+      @resource_name ||= controller_name.singularize
     end
 
     # Only allow a trusted parameter "white list" through.
@@ -46,7 +46,7 @@ module Api
     # the method "#{resource_name}_params" to limit permitted
     # parameters for the individual model.
     def resource_params
-      @resource_params ||= self.send("#{resource_name}_params")
+      @resource_params ||= send("#{resource_name}_params")
     end
 
     # Use callbacks to share common setup or constraints between actions.

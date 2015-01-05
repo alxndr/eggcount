@@ -1,2 +1,12 @@
 Metrics/LineLength:
   Max: 110
+
+ShowCopNames: true
+
+Style/StringLiterals:
+  EnforcedStyle: single_quotes
+
+Style/EmptyLinesAroundBody:
+  SupportedStyles:
+    - empty_lines
+    - no_empty_lines
