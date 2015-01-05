@@ -19,7 +19,7 @@ var seriesData = years.reduce(function(seriesData, year) {
 
     console.log(daysData);
     $chart.highcharts({
-      chart: { type: 'spline' },
+      chart: { type: 'column' },
       title: { text: '' },
       xAxis: {
           type: 'datetime',
@@ -37,7 +37,7 @@ var seriesData = years.reduce(function(seriesData, year) {
       },
       tooltip: {
           headerFormat: '<b>{series.name}</b><br>',
-          pointFormat: '{point.x:%e. %b}: {point.y:.2f} m'
+          pointFormat: '{point.x:%b %e}: {point.y:%f}'
       },
 
       series: seriesData
