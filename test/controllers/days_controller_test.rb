@@ -2,6 +2,10 @@ require 'test_helper'
 
 class DaysControllerTest < ActionController::TestCase
 
+  def setup
+    Day.delete_all
+  end
+
   test 'should get index' do
     get :index
 
