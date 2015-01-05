@@ -23,4 +23,11 @@ class DayTest < ActiveSupport::TestCase
     assert_not day.save, 'Saved day record without count'
   end
 
+  test 'will not allow multiple records with same field' do
+    Day.create date: Date.new(2015, 7, 16), count: 2
+    duplicate_day = Day.new date: Date.new(2015, 7, 16), count: 3
+
+    assert_not duplicate_day.save, 'Saved day record with non-unique date'
+  end
+
 end
