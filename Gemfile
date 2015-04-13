@@ -8,7 +8,7 @@ gem 'highcharts-rails', '~> 4.0.0'
 gem 'jbuilder', '~> 1.2'
 gem 'jquery-rails'
 gem 'pg'
-gem 'rails', '~> 4.2.0'
+gem 'rails', '~> 4.2.1'
 gem 'rails_12factor', group: :production
 gem 'responders', '~> 2.0'
 gem 'sass-rails', '~> 4.0.2'
