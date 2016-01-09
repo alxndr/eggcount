@@ -3,6 +3,7 @@ class DaysController < ApplicationController
   def index
     @days = Day.all.order(:date)
     @day = Day.new
+    expires_in 2.minutes, public: true
   end
 
   def show
