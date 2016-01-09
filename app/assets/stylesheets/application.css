@@ -22,3 +22,7 @@
 .calendar .month li {
   white-space: nowrap;
 }
+
+.calendar .month .date:after {
+  content: ':\a0';
+}
