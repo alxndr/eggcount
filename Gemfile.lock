@@ -128,7 +128,7 @@ GEM
       sass (~> 3.2.2)
       sprockets (~> 2.8, < 3.0)
       sprockets-rails (~> 2.0)
-    skylight (0.6.0)
+    skylight (0.10.1)
       activesupport (>= 3.0.0)
     sprockets (2.11.3)
       hike (~> 1.2)
@@ -165,6 +165,6 @@ DEPENDENCIES
   rake
   responders (~> 2.0)
   sass-rails (~> 4.0.2)
-  skylight
+  skylight (~> 0.10.1)
   sprockets (~> 2.11.3)
   uglifier (~> 2.7.2)
