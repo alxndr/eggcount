@@ -14,7 +14,7 @@ gem 'responders', '~> 2.0'
 gem 'sass-rails', '~> 4.0.2'
 gem 'skylight'
 gem 'sprockets', '~> 2.11.3' # CVE 2014-7819
-gem 'uglifier', '>= 1.3.0'
+gem 'uglifier', '~> 2.7.2'
 
 group :development do
   gem 'better_errors'
