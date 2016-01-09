@@ -1,7 +1,18 @@
 <h1>Eggs</h1>
 
-<%= render 'form' -%>
+<% if editor_request?(request.remote_ip) -%>
+  <%= render 'form' -%>
+  <p class="chart-placeholder">
+    <button onClick="this.remove(); showChart()">show chart</button>
+  </p>
+<% else -%>
+  <% content_for :foot do -%>
+    <script>
+     $('document').ready(function() { showChart(); });
+    </script>
+  <% end -%>
+<% end -%>
 
 <%= render 'chart' -%>
 
-<%= render 'list', days: @days, modified_day: (params["modified"] ? Day.find_by_id(params["modified"]) : nil) -%>
+<%= render 'list', days: @days, modified_day: (Day.find_by_id(params["modified"]) || nil) -%>

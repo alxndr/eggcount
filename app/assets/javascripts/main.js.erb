@@ -1,4 +1,4 @@
-(function() {
+(function(context) {
 
   function prepareDayDataForHC(attributeName) {
     return function(dayData) {
@@ -45,11 +45,6 @@
 
   $(function() {
 
-    $.ajax("/api/years.json").
-      then(extractYearData).
-      then(createChart).
-      fail(console.error.bind(console));
-
     function createChart(seriesData) {
       $("#chart").highcharts({
         title: { text: 'eggs' },
@@ -79,6 +74,13 @@
         series: seriesData,
       });
     }
+
+    context.showChart = function() {
+      $.ajax("/api/years.json")
+        .then(extractYearData)
+        .then(createChart)
+        .fail(console.error.bind(console));
+    };
 
   });
 })(this);
