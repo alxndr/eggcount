@@ -23,7 +23,7 @@ class DaysController < ApplicationController
   def update
     @day = Day.find(params[:id])
     if @day.update(day_params)
-      redirect_to @day
+      redirect_to root_path(modified: @day.reload)
     else
       render 'edit'
     end
