@@ -11,6 +11,7 @@ gem 'rails', '~> 4.2.1'
 gem 'rails_12factor', group: :production
 gem 'responders', '~> 2.0'
 gem 'sass-rails', '~> 5.0.4'
+gem 'seed_dump'
 gem 'skylight', '~> 0.10.1'
 gem 'sprockets', '~> 3.5.2'
 gem 'uglifier', '~> 2.7.2'
