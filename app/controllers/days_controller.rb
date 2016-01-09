@@ -11,8 +11,9 @@ class DaysController < ApplicationController
 
   def create
     @day = Day.new(day_params)
-    @day.save!
-    redirect_to @day
+    if @day.save
+      redirect_to root_path
+    end
   end
 
   def edit

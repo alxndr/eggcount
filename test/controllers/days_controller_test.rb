@@ -21,7 +21,7 @@ class DaysControllerTest < ActionController::TestCase
     end
 
     assert_not_nil assigns(:day)
-    assert_redirected_to day_path(assigns(:day))
+    assert_redirected_to root_path(modified: assigns(:day).id)
   end
 
 end
