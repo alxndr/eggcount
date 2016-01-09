@@ -13,7 +13,7 @@
       name: yearData.year,
       data: yearData.days.map(prepareDayDataForHC('count')),
       type: 'column',
-      color: '#ddd',
+      color: 'rgba(100, 100, 100, 0.5)',
       borderWidth: 0,
       pointPadding: 0,
       groupPadding: 0
@@ -22,19 +22,19 @@
       name: '' + yearData.year + ' 1-wk avg',
       data: yearData.days.map(prepareDayDataForHC('avg7')),
       type: 'line',
-      color: '#bbb'
+      color: 'rgba(150, 150, 150, 0.5)'
     });
     seriesData.push({
       name: '' + yearData.year + ' 1-mo avg',
       data: yearData.days.map(prepareDayDataForHC('avg28')),
       type: 'line',
-      color: '#5d5'
+      color: 'rgba(50, 250, 50, 0.7)'
     });
     seriesData.push({
       name: '' + yearData.year + ' 3-mo avg',
       data: yearData.days.map(prepareDayDataForHC('avg84')),
       type: 'line',
-      color: '#55d'
+      color: 'rgba(50, 50, 250, 0.7)'
     });
     return seriesData;
   }
