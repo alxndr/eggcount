@@ -2,7 +2,7 @@
   <ul>
     <% days.chunk { |d| [d.date.year, d.date.month] }.each do |(year, month), days_in_month| -%>
       <li class="month">
-        <p><%= Date::MONTHNAMES[month][0...3] %> <%= year %></p>
+        <p><%= Date::ABBR_MONTHNAMES[month] %> <%= year %></p>
         <ul>
           <% days_in_month.each do |day| -%>
             <li>
