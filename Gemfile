@@ -4,7 +4,7 @@ ruby '2.2.0'
 
 gem 'bugsnag', '~> 3.0.0'
 gem 'coffee-rails', '~> 4.0.0'
-gem 'highcharts-rails', '~> 4.0.0'
+gem 'highcharts-rails', '~> 4.1.9'
 gem 'jbuilder', '~> 1.2'
 gem 'jquery-rails', '~> 4.0.5'
 gem 'pg', '~> 0.18.4'
