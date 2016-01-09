@@ -3,31 +3,36 @@
  *= require_tree .
  */
 
-.calendar ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-size: 0.75em;
+.calendar {
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.75em;
+  } 
+
+  .month {
+    display: inline-block;
+    vertical-align: top;
+
+    ul {
+      display: inline-block;
+    }
+
+    li {
+      padding: 0.2em 0.4em;
+      white-space: nowrap;
+    }
+
+    .modified {
+      background: pink;
+    }
+
+    .date:after {
+      content: ':\a0';
+    }
+  }
+
 }
 
-.calendar .month {
-  display: inline-block;
-  vertical-align: top;
-}
-
-.calendar .month ul {
-  display: inline-block;
-}
-
-.calendar .month li {
-  padding: 0.2em 0.4em;
-  white-space: nowrap;
-}
-
-.calendar .modified {
-  background: pink;
-}
-
-.calendar .month .date:after {
-  content: ':\a0';
-}
