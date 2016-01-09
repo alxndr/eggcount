@@ -16,6 +16,11 @@ gem 'skylight'
 gem 'sprockets', '~> 2.11.3' # CVE 2014-7819
 gem 'uglifier', '>= 1.3.0'
 
+group :development do
+  gem 'better_errors'
+  gem 'binding_of_caller'
+end
+
 group :development, :test do
   gem 'rake'
 end
