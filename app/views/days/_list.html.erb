@@ -5,10 +5,10 @@
         <p><%= Date::ABBR_MONTHNAMES[month] %> <%= year %></p>
         <ul>
           <% days_in_month.each do |day| -%>
-            <li>
+            <%= content_tag :li, class: (day == modified_day ? "modified" : nil) do -%>
               <span class="date"><%= link_to day.date.day.ordinalize, day %></span>
               <span class="count"><%= pluralize day.count, 'egg' %></span>
-            </li>
+            <% end -%>
           <% end -%>
         </ul>
       </li>

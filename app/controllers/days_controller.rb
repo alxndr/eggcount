@@ -12,7 +12,7 @@ class DaysController < ApplicationController
   def create
     @day = Day.new(day_params)
     if @day.save
-      redirect_to root_path
+      redirect_to root_path(modified: @day.reload)
     end
   end
 

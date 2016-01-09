@@ -4,4 +4,4 @@
 
 <%= render 'chart' -%>
 
-<%= render 'list', days: @days -%>
+<%= render 'list', days: @days, modified_day: (params["modified"] ? Day.find_by_id(params["modified"]) : nil) -%>

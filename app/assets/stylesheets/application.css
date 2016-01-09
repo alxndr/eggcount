@@ -20,7 +20,12 @@
 }
 
 .calendar .month li {
+  padding: 0.2em 0.4em;
   white-space: nowrap;
+}
+
+.calendar .modified {
+  background: pink;
 }
 
 .calendar .month .date:after {
