@@ -11,16 +11,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140701071312) do
+ActiveRecord::Schema.define(version: 20160109175544) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "days", force: true do |t|
+  create_table "days", force: :cascade do |t|
     t.integer  "count",      null: false
     t.date     "date",       null: false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "days", ["date"], name: "index_days_on_date", unique: true, using: :btree
 
 end
