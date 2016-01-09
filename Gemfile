@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 ruby '2.2.0'
 
-gem 'bugsnag'
+gem 'bugsnag', '~> 3.0.0'
 gem 'coffee-rails', '~> 4.0.0'
 gem 'highcharts-rails', '~> 4.0.0'
 gem 'jbuilder', '~> 1.2'
