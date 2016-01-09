@@ -6,7 +6,7 @@ gem 'bugsnag'
 gem 'coffee-rails', '~> 4.0.0'
 gem 'highcharts-rails', '~> 4.0.0'
 gem 'jbuilder', '~> 1.2'
-gem 'jquery-rails'
+gem 'jquery-rails', '~> 4.0.5'
 gem 'pg'
 gem 'rails', '~> 4.2.1'
 gem 'rails_12factor', group: :production
