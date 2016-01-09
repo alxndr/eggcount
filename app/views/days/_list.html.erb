@@ -1,17 +1,19 @@
-<div class="calendar">
-  <ul>
-    <% days.chunk { |d| [d.date.year, d.date.month] }.each do |(year, month), days_in_month| -%>
-      <li class="month">
-        <p><%= Date::ABBR_MONTHNAMES[month] %> <%= year %></p>
-        <ul>
-          <% days_in_month.each do |day| -%>
-            <%= content_tag :li, class: (day == modified_day ? "modified" : nil) do -%>
-              <span class="date"><%= link_to day.date.day.ordinalize, day %></span>
-              <span class="count"><%= pluralize day.count, 'egg' %></span>
+<% cache(days) do -%>
+  <div class="calendar">
+    <ul>
+      <% days.chunk { |d| [d.date.year, d.date.month] }.each do |(year, month), days_in_month| -%>
+        <li class="month">
+          <p><%= Date::ABBR_MONTHNAMES[month] %> <%= year %></p>
+          <ul>
+            <% days_in_month.each do |day| -%>
+              <%= content_tag :li, class: (day == modified_day ? "modified" : nil) do -%>
+                <span class="date"><%= link_to day.date.day.ordinalize, day %></span>
+                <span class="count"><%= pluralize day.count, 'egg' %></span>
+              <% end -%>
             <% end -%>
-          <% end -%>
-        </ul>
-      </li>
-    <% end -%>
-  </ul>
-</div>
+          </ul>
+        </li>
+      <% end -%>
+    </ul>
+  </div>
+<% end -%>
