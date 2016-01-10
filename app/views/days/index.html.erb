@@ -1,7 +1,7 @@
 <h1>Eggs</h1>
 
 <% if editor_request?(request.remote_ip) -%>
-  <%= render 'form' -%>
+  <%= render 'form', day_to_edit: @day -%>
   <p class="chart-placeholder">
     <button onClick="this.remove(); showChart()">show chart</button>
   </p>
