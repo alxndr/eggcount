@@ -1,5 +1,16 @@
 (function(context) {
 
+  function hexToRgba(hex, opacity) {
+    var matches = hex.match(/(..)(..)(..)/);
+    var r = matches[1],
+      g = matches[2],
+      b = matches[3];
+    var r_int = parseInt(r, 16),
+      g_int = parseInt(g, 16),
+      b_int = parseInt(b, 16);
+    return 'rgba(' + r_int + ',' + g_int + ',' + b_int + ',' + opacity + ')';
+  }
+
   function prepareDayDataForHC(attributeName) {
     return function(dayData) {
       var month0indexed = parseInt(dayData.date.substring(5, 7), 10) - 1;
@@ -13,7 +24,7 @@
       name: yearData.year,
       data: yearData.days.map(prepareDayDataForHC('count')),
       type: 'scatter',
-      color: 'rgba(150, 150, 150, 0.2)'
+      color: hexToRgba("666666", 0.1)
     };
   }
 
@@ -22,7 +33,6 @@
       name: '' + yearData.year + ' 1-wk avg',
       data: yearData.days.map(prepareDayDataForHC('avg7')),
       type: 'line',
-      color: 'rgba(50, 50, 50, 0.4)'
     };
   }
 
@@ -31,7 +41,6 @@
       name: '' + yearData.year + ' 1-mo avg',
       data: yearData.days.map(prepareDayDataForHC('avg28')),
       type: 'line',
-      color: 'rgba(50, 250, 50, 0.6)'
     };
   }
 
@@ -40,7 +49,6 @@
       name: '' + yearData.year + ' 3-mo avg',
       data: yearData.days.map(prepareDayDataForHC('avg84')),
       type: 'line',
-      color: 'rgba(100, 0, 200, 0.5)'
     };
   }
 
@@ -61,7 +69,7 @@
 
     function createChart(seriesData) {
       $("#charts").highcharts({
-        title: { text: 'eggs' },
+        title: { text: 'egg counts' },
         alignTicks: false,
         xAxis: {
           type: 'datetime',
@@ -72,7 +80,7 @@
           title: { text: 'date' }
         },
         yAxis: {
-          title: { text: 'eggs' },
+          title: { text: 'number of eggs' },
           min: 0,
           endOnTick: false
         },
