@@ -4,7 +4,7 @@ module Api
     # GET /api/years.json
     def index
       @years = Year.find_stuff
-      expires_in 5.minutes, public: true
+      # expires_in 2.minutes, public: true # this is for the *browser*'s cache
     end
 
   end
