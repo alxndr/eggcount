@@ -21,10 +21,10 @@
 
   function chartConfigForRawCount(yearData) {
     return {
-      name: yearData.year,
+      name: '' + yearData.year + ' raw counts',
       data: yearData.days.map(prepareDayDataForHC('count')),
       type: 'scatter',
-      color: hexToRgba("666666", 0.1)
+      color: hexToRgba('666666', 0.1)
     };
   }
 
@@ -53,22 +53,27 @@
   }
 
   function createSeriesDataForHC(seriesData, yearData) {
-    seriesData.push(chartConfigForRawCount(yearData));
-    seriesData.push(chartConfigFor1wkAvg(yearData));
-    seriesData.push(chartConfigFor1moAvg(yearData));
-    seriesData.push(chartConfigFor3moAvg(yearData));
+    seriesData['raw'].push(chartConfigForRawCount(yearData));
+    seriesData['1wk'].push(chartConfigFor1wkAvg(yearData));
+    seriesData['1mo'].push(chartConfigFor1moAvg(yearData));
+    seriesData['3mo'].push(chartConfigFor3moAvg(yearData));
     return seriesData;
   }
 
   function extractYearData(data) {
-    // creates array of objects, each object is a series of data
-    return data.years.reduce(createSeriesDataForHC, []);
+    return data.years.reduce(createSeriesDataForHC, {
+      'raw': [],
+      '1wk': [],
+      '1mo': [],
+      '3mo': []
+    });
   }
 
   $(function() {
 
     function createChart(seriesData) {
-      $("#charts").highcharts({
+      $('#raw').highcharts({
+        series: seriesData['raw'],
         title: { text: 'egg counts' },
         alignTicks: false,
         xAxis: {
@@ -93,12 +98,92 @@
             animation: false
           }
         },
-        series: seriesData,
+      });
+      $('#1wk').highcharts({
+        series: seriesData['1wk'],
+        title: { text: 'one week running average' },
+        alignTicks: false,
+        xAxis: {
+          type: 'datetime',
+          dateTimeLabelFormats: { // don't display the dummy year; it's part of data
+            month: '%b',
+            year: '%b'
+          },
+          title: { text: 'date' }
+        },
+        yAxis: {
+          title: { text: 'number of eggs' },
+          min: 0,
+          endOnTick: false
+        },
+        tooltip: {
+          headerFormat: '<b>{series.name}</b><br>', // fake the year
+          pointFormat: '{point.x:%b}: {point.y:.0f}'
+        },
+        plotOptions: {
+          series: {
+            animation: false
+          }
+        },
+      });
+      $('#1mo').highcharts({
+        series: seriesData['1mo'],
+        title: { text: 'one month running average' },
+        alignTicks: false,
+        xAxis: {
+          type: 'datetime',
+          dateTimeLabelFormats: { // don't display the dummy year; it's part of data
+            month: '%b',
+            year: '%b'
+          },
+          title: { text: 'date' }
+        },
+        yAxis: {
+          title: { text: 'number of eggs' },
+          min: 0,
+          endOnTick: false
+        },
+        tooltip: {
+          headerFormat: '<b>{series.name}</b><br>', // fake the year
+          pointFormat: '{point.x:%b}: {point.y:.0f}'
+        },
+        plotOptions: {
+          series: {
+            animation: false
+          }
+        },
+      });
+      $('#3mo').highcharts({
+        series: seriesData['3mo'],
+        title: { text: 'three month running average' },
+        alignTicks: false,
+        xAxis: {
+          type: 'datetime',
+          dateTimeLabelFormats: { // don't display the dummy year; it's part of data
+            month: '%b',
+            year: '%b'
+          },
+          title: { text: 'date' }
+        },
+        yAxis: {
+          title: { text: 'number of eggs' },
+          min: 0,
+          endOnTick: false
+        },
+        tooltip: {
+          headerFormat: '<b>{series.name}</b><br>', // fake the year
+          pointFormat: '{point.x:%b}: {point.y:.0f}'
+        },
+        plotOptions: {
+          series: {
+            animation: false
+          }
+        },
       });
     }
 
     context.showChart = function() {
-      $.ajax("/api/years.json")
+      $.ajax('/api/years.json')
         .then(extractYearData)
         .then(createChart)
         .fail(console.error.bind(console));
