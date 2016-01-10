@@ -1,4 +1,4 @@
-<h1>Eggs</h1>
+<h1><%= link_to "Eggs", root_path %></h1>
 
 <% if editor_request?(request.remote_ip) -%>
   <%= render 'form', day_to_edit: @day -%>
