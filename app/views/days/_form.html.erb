@@ -1,9 +1,9 @@
-<%= form_for day_to_edit do |f| -%>
+<%= form_for day_to_edit do |form| -%>
 
-  <p>Day: <%= f.date_field :date -%></p>
+  <p>Date: <%= form.date_field :date -%></p>
 
-  <p>Count: <%= f.number_field :count -%></p>
+  <p>Eggs: <%= form.number_field :count -%></p>
 
-  <p><button type="submit">yup</button></p>
+  <p><button type="submit">save</button></p>
 
 <% end -%>
