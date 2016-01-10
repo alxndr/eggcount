@@ -6,3 +6,7 @@ eggcount
 [![PullReview stats](https://www.pullreview.com/github/alxndr/eggcount/badges/master.svg?)](https://www.pullreview.com/github/alxndr/eggcount/reviews/master)
 [![Dependency status](https://gemnasium.com/alxndr/eggcount.svg)](https://gemnasium.com/alxndr/eggcount)
 [![Documentation coverage](http://inch-ci.org/github/alxndr/eggcount.svg?branch=master)](http://inch-ci.org/github/alxndr/eggcount)
+
+This is a bare-bones CRUD app to track how many eggs your chickens are laying.
+
+Currently, it generates a sorta-hard-to-read graph with some average egg laying counts over the course of a year.
