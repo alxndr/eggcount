@@ -1,16 +1,5 @@
 (function(context) {
 
-  function hexToRgba(hex, opacity) {
-    var matches = hex.match(/(..)(..)(..)/);
-    var r = matches[1],
-      g = matches[2],
-      b = matches[3];
-    var r_int = parseInt(r, 16),
-      g_int = parseInt(g, 16),
-      b_int = parseInt(b, 16);
-    return 'rgba(' + r_int + ',' + g_int + ',' + b_int + ',' + opacity + ')';
-  }
-
   function prepareDayDataForHC(attributeName) {
     return function(dayData) {
       var month0indexed = parseInt(dayData.date.substring(5, 7), 10) - 1;
@@ -21,34 +10,33 @@
 
   function chartConfigForRawCount(yearData) {
     return {
-      name: '' + yearData.year + ' raw counts',
+      name: '' + yearData.year,
       data: yearData.days.map(prepareDayDataForHC('count')),
-      type: 'scatter',
-      color: hexToRgba('666666', 0.1)
+      type: 'scatter'
     };
   }
 
   function chartConfigFor1wkAvg(yearData) {
     return {
-      name: '' + yearData.year + ' 1-wk avg',
+      name: '' + yearData.year,
       data: yearData.days.map(prepareDayDataForHC('avg7')),
-      type: 'line',
+      type: 'line'
     };
   }
 
   function chartConfigFor1moAvg(yearData) {
     return {
-      name: '' + yearData.year + ' 1-mo avg',
+      name: '' + yearData.year,
       data: yearData.days.map(prepareDayDataForHC('avg28')),
-      type: 'line',
+      type: 'line'
     };
   }
 
   function chartConfigFor3moAvg(yearData) {
     return {
-      name: '' + yearData.year + ' 3-mo avg',
+      name: '' + yearData.year,
       data: yearData.days.map(prepareDayDataForHC('avg84')),
-      type: 'line',
+      type: 'line'
     };
   }
 
@@ -69,117 +57,43 @@
     });
   }
 
+  function chartOptions(config) {
+    return {
+      series: config.series,
+      title: { text: config.title },
+      alignTicks: false,
+      xAxis: {
+        type: 'datetime',
+        dateTimeLabelFormats: { // don't display the dummy year; it's part of data
+          month: '%b',
+          year: '%b'
+        },
+        title: { text: 'date' }
+      },
+      yAxis: {
+        title: { text: 'number of eggs' },
+        min: 0,
+        endOnTick: false
+      },
+      tooltip: {
+        headerFormat: '<b>{series.name}</b><br>', // fake the year
+        pointFormat: '{point.x:%b}: {point.y:.0f}'
+      },
+      plotOptions: {
+        series: {
+          animation: false
+        }
+      },
+    };
+  }
+
   $(function() {
 
     function createChart(seriesData) {
-      $('#raw').highcharts({
-        series: seriesData['raw'],
-        title: { text: 'egg counts' },
-        alignTicks: false,
-        xAxis: {
-          type: 'datetime',
-          dateTimeLabelFormats: { // don't display the dummy year; it's part of data
-            month: '%b',
-            year: '%b'
-          },
-          title: { text: 'date' }
-        },
-        yAxis: {
-          title: { text: 'number of eggs' },
-          min: 0,
-          endOnTick: false
-        },
-        tooltip: {
-          headerFormat: '<b>{series.name}</b><br>', // fake the year
-          pointFormat: '{point.x:%b}: {point.y:.0f}'
-        },
-        plotOptions: {
-          series: {
-            animation: false
-          }
-        },
-      });
-      $('#1wk').highcharts({
-        series: seriesData['1wk'],
-        title: { text: 'one week running average' },
-        alignTicks: false,
-        xAxis: {
-          type: 'datetime',
-          dateTimeLabelFormats: { // don't display the dummy year; it's part of data
-            month: '%b',
-            year: '%b'
-          },
-          title: { text: 'date' }
-        },
-        yAxis: {
-          title: { text: 'number of eggs' },
-          min: 0,
-          endOnTick: false
-        },
-        tooltip: {
-          headerFormat: '<b>{series.name}</b><br>', // fake the year
-          pointFormat: '{point.x:%b}: {point.y:.0f}'
-        },
-        plotOptions: {
-          series: {
-            animation: false
-          }
-        },
-      });
-      $('#1mo').highcharts({
-        series: seriesData['1mo'],
-        title: { text: 'one month running average' },
-        alignTicks: false,
-        xAxis: {
-          type: 'datetime',
-          dateTimeLabelFormats: { // don't display the dummy year; it's part of data
-            month: '%b',
-            year: '%b'
-          },
-          title: { text: 'date' }
-        },
-        yAxis: {
-          title: { text: 'number of eggs' },
-          min: 0,
-          endOnTick: false
-        },
-        tooltip: {
-          headerFormat: '<b>{series.name}</b><br>', // fake the year
-          pointFormat: '{point.x:%b}: {point.y:.0f}'
-        },
-        plotOptions: {
-          series: {
-            animation: false
-          }
-        },
-      });
-      $('#3mo').highcharts({
-        series: seriesData['3mo'],
-        title: { text: 'three month running average' },
-        alignTicks: false,
-        xAxis: {
-          type: 'datetime',
-          dateTimeLabelFormats: { // don't display the dummy year; it's part of data
-            month: '%b',
-            year: '%b'
-          },
-          title: { text: 'date' }
-        },
-        yAxis: {
-          title: { text: 'number of eggs' },
-          min: 0,
-          endOnTick: false
-        },
-        tooltip: {
-          headerFormat: '<b>{series.name}</b><br>', // fake the year
-          pointFormat: '{point.x:%b}: {point.y:.0f}'
-        },
-        plotOptions: {
-          series: {
-            animation: false
-          }
-        },
-      });
+      $('#raw').highcharts(chartOptions({series: seriesData['raw'], title: 'egg counts'}));
+      $('#1wk').highcharts(chartOptions({series: seriesData['1wk'], title: 'one week running average'}));
+      $('#1mo').highcharts(chartOptions({series: seriesData['1mo'], title: 'one month running average'}));
+      $('#3mo').highcharts(chartOptions({series: seriesData['3mo'], title: 'three month running average'}));
     }
 
     context.showChart = function() {
