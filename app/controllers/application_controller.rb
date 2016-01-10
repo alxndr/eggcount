@@ -6,7 +6,7 @@ class ApplicationController < ActionController::Base
   private
 
   helper_method def editor_request?(ip)
-    ip == "::1" || ip == "70.36.235.129"
+    ip == "::1"
   end
 
 end
