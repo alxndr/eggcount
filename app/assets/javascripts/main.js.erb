@@ -8,45 +8,59 @@
     }
   }
 
-  function createSeriesDatForHc(seriesData, yearData) {
-    seriesData.push({
+  function chartConfigForRawCount(yearData) {
+    return {
       name: yearData.year,
       data: yearData.days.map(prepareDayDataForHC('count')),
-      type: 'column',
-      color: 'rgba(150, 150, 150, 0.4)',
-      borderWidth: 0,
-      pointPadding: 0,
-      groupPadding: 0
-    });
-    seriesData.push({
+      type: 'scatter',
+      color: 'rgba(150, 150, 150, 0.2)'
+    };
+  }
+
+  function chartConfigFor1wkAvg(yearData) {
+    return {
       name: '' + yearData.year + ' 1-wk avg',
       data: yearData.days.map(prepareDayDataForHC('avg7')),
       type: 'line',
-      color: 'rgba(50, 50, 50, 0.3)'
-    });
-    seriesData.push({
+      color: 'rgba(50, 50, 50, 0.4)'
+    };
+  }
+
+  function chartConfigFor1moAvg(yearData) {
+    return {
       name: '' + yearData.year + ' 1-mo avg',
       data: yearData.days.map(prepareDayDataForHC('avg28')),
       type: 'line',
       color: 'rgba(50, 250, 50, 0.6)'
-    });
-    seriesData.push({
+    };
+  }
+
+  function chartConfigFor3moAvg(yearData) {
+    return {
       name: '' + yearData.year + ' 3-mo avg',
       data: yearData.days.map(prepareDayDataForHC('avg84')),
       type: 'line',
       color: 'rgba(100, 0, 200, 0.5)'
-    });
+    };
+  }
+
+  function createSeriesDataForHC(seriesData, yearData) {
+    seriesData.push(chartConfigForRawCount(yearData));
+    seriesData.push(chartConfigFor1wkAvg(yearData));
+    seriesData.push(chartConfigFor1moAvg(yearData));
+    seriesData.push(chartConfigFor3moAvg(yearData));
     return seriesData;
   }
 
   function extractYearData(data) {
-    return data.years.reduce(createSeriesDatForHc, []);
+    // creates array of objects, each object is a series of data
+    return data.years.reduce(createSeriesDataForHC, []);
   }
 
   $(function() {
 
     function createChart(seriesData) {
-      $("#chart").highcharts({
+      $("#charts").highcharts({
         title: { text: 'eggs' },
         alignTicks: false,
         xAxis: {
