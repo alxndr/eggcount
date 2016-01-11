@@ -8,14 +8,6 @@
     }
   }
 
-  function chartConfigForRawCount(yearData) {
-    return {
-      name: '' + yearData.year,
-      data: yearData.days.map(prepareDayDataForHC('count')),
-      type: 'scatter'
-    };
-  }
-
   function chartConfigFor1wkAvg(yearData) {
     return {
       name: '' + yearData.year,
@@ -41,7 +33,6 @@
   }
 
   function createSeriesDataForHC(seriesData, yearData) {
-    seriesData['raw'].push(chartConfigForRawCount(yearData));
     seriesData['1wk'].push(chartConfigFor1wkAvg(yearData));
     seriesData['1mo'].push(chartConfigFor1moAvg(yearData));
     seriesData['3mo'].push(chartConfigFor3moAvg(yearData));
@@ -50,7 +41,6 @@
 
   function extractYearData(data) {
     return data.years.reduce(createSeriesDataForHC, {
-      'raw': [],
       '1wk': [],
       '1mo': [],
       '3mo': []
@@ -90,7 +80,6 @@
   $(function() {
 
     function createChart(seriesData) {
-      $('#raw').highcharts(chartOptions({series: seriesData['raw'], title: 'egg counts'}));
       $('#1wk').highcharts(chartOptions({series: seriesData['1wk'], title: 'one week running average'}));
       $('#1mo').highcharts(chartOptions({series: seriesData['1mo'], title: 'one month running average'}));
       $('#3mo').highcharts(chartOptions({series: seriesData['3mo'], title: 'three month running average'}));
