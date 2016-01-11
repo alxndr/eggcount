@@ -8,75 +8,85 @@
     }
   }
 
-  function createSeriesDatForHc(seriesData, yearData) {
-    seriesData.push({
-      name: yearData.year,
-      data: yearData.days.map(prepareDayDataForHC('count')),
-      type: 'column',
-      color: 'rgba(150, 150, 150, 0.4)',
-      borderWidth: 0,
-      pointPadding: 0,
-      groupPadding: 0
-    });
-    seriesData.push({
-      name: '' + yearData.year + ' 1-wk avg',
+  function chartConfigFor1wkAvg(yearData) {
+    return {
+      name: '' + yearData.year,
       data: yearData.days.map(prepareDayDataForHC('avg7')),
-      type: 'line',
-      color: 'rgba(50, 50, 50, 0.3)'
-    });
-    seriesData.push({
-      name: '' + yearData.year + ' 1-mo avg',
+      type: 'line'
+    };
+  }
+
+  function chartConfigFor1moAvg(yearData) {
+    return {
+      name: '' + yearData.year,
       data: yearData.days.map(prepareDayDataForHC('avg28')),
-      type: 'line',
-      color: 'rgba(50, 250, 50, 0.6)'
-    });
-    seriesData.push({
-      name: '' + yearData.year + ' 3-mo avg',
+      type: 'line'
+    };
+  }
+
+  function chartConfigFor3moAvg(yearData) {
+    return {
+      name: '' + yearData.year,
       data: yearData.days.map(prepareDayDataForHC('avg84')),
-      type: 'line',
-      color: 'rgba(100, 0, 200, 0.5)'
-    });
+      type: 'line'
+    };
+  }
+
+  function createSeriesDataForHC(seriesData, yearData) {
+    seriesData['1wk'].push(chartConfigFor1wkAvg(yearData));
+    seriesData['1mo'].push(chartConfigFor1moAvg(yearData));
+    seriesData['3mo'].push(chartConfigFor3moAvg(yearData));
     return seriesData;
   }
 
   function extractYearData(data) {
-    return data.years.reduce(createSeriesDatForHc, []);
+    return data.years.reduce(createSeriesDataForHC, {
+      '1wk': [],
+      '1mo': [],
+      '3mo': []
+    });
+  }
+
+  function chartOptions(config) {
+    return {
+      series: config.series,
+      title: { text: config.title },
+      alignTicks: false,
+      xAxis: {
+        type: 'datetime',
+        dateTimeLabelFormats: { // don't display the dummy year; it's part of data
+          month: '%b',
+          year: '%b'
+        },
+        title: { text: 'date' }
+      },
+      yAxis: {
+        title: { text: 'number of eggs' },
+        min: 0,
+        endOnTick: false
+      },
+      tooltip: {
+        headerFormat: '<b>{series.name}</b><br>', // fake the year
+        pointFormat: '{point.x:%b}: {point.y:.0f}'
+      },
+      plotOptions: {
+        series: {
+          animation: false
+        }
+      },
+    };
   }
 
   $(function() {
 
     function createChart(seriesData) {
-      $("#chart").highcharts({
-        title: { text: 'eggs' },
-        alignTicks: false,
-        xAxis: {
-          type: 'datetime',
-          dateTimeLabelFormats: { // don't display the dummy year; it's part of data
-            month: '%b',
-            year: '%b'
-          },
-          title: { text: 'date' }
-        },
-        yAxis: {
-          title: { text: 'eggs' },
-          min: 0,
-          endOnTick: false
-        },
-        tooltip: {
-          headerFormat: '<b>{series.name}</b><br>', // fake the year
-          pointFormat: '{point.x:%b}: {point.y:.0f}'
-        },
-        plotOptions: {
-          series: {
-            animation: false
-          }
-        },
-        series: seriesData,
-      });
+      $('#1wk').highcharts(chartOptions({series: seriesData['1wk'], title: 'one week running average'}));
+      $('#1mo').highcharts(chartOptions({series: seriesData['1mo'], title: 'one month running average'}));
+      $('#3mo').highcharts(chartOptions({series: seriesData['3mo'], title: 'three month running average'}));
     }
 
     context.showChart = function() {
-      $.ajax("/api/years.json")
+      $.ajax('/api/years.json')
         .then(extractYearData)
         .then(createChart)
         .fail(console.error.bind(console));
