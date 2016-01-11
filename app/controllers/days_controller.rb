@@ -21,6 +21,10 @@ class DaysController < ApplicationController
     @day = Day.find(params[:id])
   end
 
+  def new
+    @day = Day.new
+  end
+
   def update
     @day = Day.find(params[:id])
     if @day.update(day_params)
