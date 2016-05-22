@@ -2,8 +2,7 @@
 
 (function(context) {
 
-  const DATA_URL = //"https://gist.githubusercontent.com/alxndr/c5cb1b4ceaf938d8801b60fd241fabf9/raw/7bf3877cd65b6e3e9ff4e64030edd2e2abb32707/eggcount.json";
-    "https://gist.github.com/gists/c5cb1b4ceaf938d8801b60fd241fabf9";
+  const DATA_URL = "https://gist.githubusercontent.com/alxndr/c5cb1b4ceaf938d8801b60fd241fabf9/raw/7bf3877cd65b6e3e9ff4e64030edd2e2abb32707/eggcount.json";
 
   function runningAverageOverPriorDays({year: startingYear, month: startingMonth, day: startingDay}, numDays, dateEntries) {
     const referenceDate = new Date(startingYear, startingMonth-1, startingDay);
