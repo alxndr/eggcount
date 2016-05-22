@@ -1,4 +1,4 @@
-/* global console, document, Highcharts */
+/* global console, document, Plotly */
 
 (function(context) {
 
@@ -11,7 +11,7 @@
     return Object.keys(obj).map((key) => obj[key]);
   }
 
-  function objectReduce(obj) {
+  function objectKeyValPairs(obj) {
     return Object.keys(obj).map((key) => [key, obj[key]]);
   }
 
@@ -109,7 +109,19 @@
     throw error;
   }
 
-  const FAKE_YEAR = 1970; // so that the data from several years will be arranged in the same place
+  function runningAverageOverPriorDays({year, month, day}, numDays, dateEntries) {
+    const cutoffDate = new Date(year, month, day);
+    cutoffDate.setDate(referenceDate.getdate() - numDays);
+    let dateInQuestion = cutoffDate;
+    while (dateInQuestion < cutoffDate) {
+      const dataForThatDay = dateEntries[year][month][day];
+      console.log("data for that day!", dataForThatDay);
+    /* const dateRange = ...;
+       dateRange
+       .map(extract the data for each date from dateEntries)
+       .reduce(sum it up) */
+    }
+  }
 
   function buildEntryDictionary(dateEntries, {date, count}) {
     const [year, month, day] = date.split("-");
@@ -119,92 +131,75 @@
     if (!dateEntries[year][month]) {
       dateEntries[year][month] = {};
     }
-    dateEntries[year][month][day] = count;
+    dateEntries[year][month][day] = {
+      count: count,
+    };
+    dateEntries[year][month][day].runningAverages = {
+      days7: runningAverageOverPriorDays({year, month, day}, 7, dateEntries)
+    };
     return dateEntries;
   }
 
-  function cleanUpYearData(hcDataArray, [monthOneIndexed, counts]) {
-    hcDataArray.push(objectReduce(counts).reduce(function(monthDataArray, [day, count]) {
-      const thing = [Date.UTC(FAKE_YEAR, parseInt(monthOneIndexed,10), parseInt(day, 10)), count];
-      monthDataArray.push(thing);
-      return monthDataArray;
-    }, []));
-    return hcDataArray;
-  }
-  function extractDataFor(year, data) {
-    // TODO avoid iterating over data multiple times...
-    return objectReduce(data[year])
-      .reduce(cleanUpYearData, [])
-      .reduce(flattener, [])
-      .sort(([timestampA], [timestampB]) => {
-        console.log("Sorting?", timestampA, timestampB);
-        return timestampA < timestampB;
-      })
-    ;
-  }
+  const keys = Object.keys.bind(Object);
 
   function calculateAverages(data) {
-    console.log("TODO calculate averages...");
-    return data;
+    return keys(data).map((year) => {
+    });
+    /* return objectKeyValPairs(data).reduce((yearsData, [year, yearData]) => {
+       return objectKeyValPairs(yearData).reduce((monthsData, [month, monthData]) => {
+       return objectKeyValPairs(monthData).reduce((daysData, [day, dayData]) => {
+       return dayData;
+       }, [])
+       }, []);
+       }, []); */
   }
 
-  function sort(data) {
-    console.log("tryna sort", data);
-    return data;
+  function thinger(acc1, [year, yearData]) {
+    /* console.log("initial reducer", year); */
+    const transformedYearData = objectKeyValPairs(yearData).reduce((acc2, [month, monthData]) => {
+      /* console.log("inside the month processor...", month, acc2); */
+      const something = objectKeyValPairs(monthData).reduce((acc3, [day, count]) => {
+        /* console.log("day processor...", `${year}-${month}-${day}`, count); */
+        acc3.countSeries.push(count);
+        acc3.dateSeries.push(new Date(year, month-1, day));
+        return acc3;
+      }, {dateSeries: [], countSeries: []});
+      /* console.log("parted out", something); */
+      return {
+        countSeries: acc2.countSeries.concat(something.countSeries),
+        dateSeries: acc2.dateSeries.concat(something.dateSeries),
+      };
+    }, {dateSeries: [], countSeries: []});
+    /* console.log(transformedYearData); */
+    return {
+      countSeries: acc1.countSeries.concat(transformedYearData.countSeries),
+      dateSeries: acc1.dateSeries.concat(transformedYearData.dateSeries),
+    }
+  }
+  function convertData(data) {
+    const {dateSeries, countSeries} = objectKeyValPairs(data).reduce(thinger, {dateSeries: [], countSeries: []});
+    return [{
+      type: "scatter",
+      mode: "markers",
+      x: dateSeries,
+      y: countSeries
+    }];
   }
 
   (function() {
 
     context.showChart = function() {
+      if (!Plotly) console.error("no plotly!");
       fetch('https://gist.githubusercontent.com/alxndr/c5cb1b4ceaf938d8801b60fd241fabf9/raw/1712731e092b6e94a350abb9a52e6a9b7b550fe2/eggcount.json')
         .then(checkStatus)
         .then((response) => response.json())
-        .then((data) => data.reduce(buildEntryDictionary, {}))
+        .then((data) => data.reduce(buildEntryDictionary, {})) // maybe this is a bad idea
+        .then((entryDictionary) => console.debug(entryDictionary) || entryDictionary)
         .then((data) => calculateAverages(data))
         .then((data) => {
-          const sortedData = sort(data);
-          new Highcharts.Chart({
-            chart: {
-              type: "line",
-              renderTo: "raw"
-            },
-            title: {
-              text: "raw counts"
-            },
-            xAxis: {
-              type: "datetime",
-              dateTimeLabelFormats: { // don't display the dummy year
-                month: "%b %e",
-                // year: "%b"
-              },
-              title: {text: "Date"}
-            },
-            yAxis: {
-              title: {text: "# of eggs per day"},
-              min: 0
-            },
-            tooltip: {
-              headerFormat: '<b>{series.name}</b><br>',
-              pointFormat: '{point.x:%b %e}: {point.y:.0f} egg(s)'
-            },
-            series: [
-              // Define the data points. All series have a dummy year
-              // of 1970/71 in order to be compared on the same x axis. Note
-              // that in JavaScript, months start at 0 for January, 1 for February etc.
-              {
-                name: "2014",
-                data: extractDataFor(2014, sortedData)
-              },
-              {
-                name: "2015",
-                data: extractDataFor(2015, sortedData)
-              },
-              {
-                name: "2015",
-                data: extractDataFor(2016, sortedData)
-              }
-            ]
-          });
+          const dataForPlotly = convertData(data);
+          console.log("ready??", dataForPlotly);
+          Plotly.newPlot("raw", dataForPlotly);
         })
       ; // fetch pipeline
     };
@@ -212,7 +207,7 @@
   })();
 })(this);
 if (document.location.hash === "#show-chart") {
-  console.log("auto-showing chart");
+  /* console.info("auto-showing chart"); */
   document.getElementsByClassName("chart-placeholder")[0].remove();
   this.showChart();
 }
