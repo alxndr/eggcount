@@ -4,6 +4,35 @@
 
   const DATA_URL = "https://gist.githubusercontent.com/alxndr/c5cb1b4ceaf938d8801b60fd241fabf9/raw/7bf3877cd65b6e3e9ff4e64030edd2e2abb32707/eggcount.json";
 
+  function keys(obj) {
+    return Object.keys(obj).sort();
+  }
+
+  function padZero(string, length = 2) {
+    while (string.length < length) {
+      string = `0${string}`;
+    }
+    return string;
+  }
+
+  function sum(sum, n) {
+    return sum + n;
+  }
+
+  function objectKeyValPairs(obj) {
+    return keys(obj).map((key) => [key, obj[key]]);
+  }
+
+  function sortByFirstElement([a], [b]) {
+    if (a < b) {
+      return -1;
+    }
+    if (b < a) {
+      return 1;
+    }
+    return 0;
+  }
+
   function dateOfFirstEntry(dateEntries) {
     const firstYear = keys(dateEntries)[0];
     const firstMonth = keys(dateEntries[firstYear])[0];
@@ -22,7 +51,13 @@
   }
 
   let theFirstEntry;
-  function runningAverageOverPriorDays({year: startingYear, month: startingMonth, day: startingDay}, numDays, dateEntries) {
+  function runningAverageOverPriorDays(
+    { year: startingYear,
+      month: startingMonth,
+      day: startingDay },
+    numDays,
+    dateEntries
+  ) {
     const monthZeroIndexed = startingMonth - 1;
     const referenceDate = new Date(startingYear, monthZeroIndexed, startingDay);
     const cutoffDate = new Date(startingYear, monthZeroIndexed, startingDay);
@@ -200,11 +235,7 @@
     };
 
     function objectValues(obj) {
-      return Object.keys(obj).map((key) => obj[key]);
-    }
-
-    function objectKeyValPairs(obj) {
-      return Object.keys(obj).map((key) => [key, obj[key]]);
+      return keys(obj).map((key) => obj[key]);
     }
 
     function randomIntLessThan(max) {
@@ -222,31 +253,6 @@
       let error = new Error(response.statusText);
       error.response = response;
       throw error;
-    }
-
-    function padZero(string, length = 2) {
-      while (string.length < length) {
-        string = `0${string}`;
-      }
-      return string;
-    }
-
-    function sum(sum, n) {
-      return sum + n;
-    }
-
-    function keys(obj) {
-      return Object.keys(obj).sort();
-    }
-
-    function sortByFirstElement([a], [b]) {
-      if (a < b) {
-        return -1;
-      }
-      if (b < a) {
-        return 1;
-      }
-      return 0;
     }
 
     function range(start, end) {
