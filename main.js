@@ -1,15 +1,23 @@
 /* global console, document, Highcharts */
 
-// Object.prototype.tap = function(cb) {
-//   cb(this);
-//   return this;
-// };
-
-function randomIntLessThan(max) {
-  return Math.floor(max * Math.random());
-}
-
 (function(context) {
+
+  // Object.prototype.tap = function(cb) {
+  //   cb(this);
+  //   return this;
+  // };
+
+  function objectValues(obj) {
+    return Object.keys(obj).map((key) => obj[key]);
+  }
+
+  function objectReduce(obj) {
+    return Object.keys(obj).map((key) => [key, obj[key]]);
+  }
+
+  function randomIntLessThan(max) {
+    return Math.floor(max * Math.random());
+  }
 
   function isDayWithinNDaysBefore(numDays, beforeDate) {
     let nDaysBeforeDate = new Date(beforeDate);
@@ -101,6 +109,8 @@ function randomIntLessThan(max) {
     throw error;
   }
 
+  const FAKE_YEAR = 1970; // so that the data from several years will be arranged in the same place
+
   function buildEntryDictionary(dateEntries, {date, count}) {
     const [year, month, day] = date.split("-");
     if (!dateEntries[year]) {
@@ -113,6 +123,36 @@ function randomIntLessThan(max) {
     return dateEntries;
   }
 
+  function cleanUpYearData(hcDataArray, [monthOneIndexed, counts]) {
+    hcDataArray.push(objectReduce(counts).reduce(function(monthDataArray, [day, count]) {
+      const thing = [Date.UTC(FAKE_YEAR, parseInt(monthOneIndexed,10), parseInt(day, 10)), count];
+      monthDataArray.push(thing);
+      return monthDataArray;
+    }, []));
+    return hcDataArray;
+  }
+  function extractDataFor(year, data) {
+    // TODO avoid iterating over data multiple times...
+    return objectReduce(data[year])
+      .reduce(cleanUpYearData, [])
+      .reduce(flattener, [])
+      .sort(([timestampA], [timestampB]) => {
+        console.log("Sorting?", timestampA, timestampB);
+        return timestampA < timestampB;
+      })
+    ;
+  }
+
+  function calculateAverages(data) {
+    console.log("TODO calculate averages...");
+    return data;
+  }
+
+  function sort(data) {
+    console.log("tryna sort", data);
+    return data;
+  }
+
   (function() {
 
     context.showChart = function() {
@@ -120,7 +160,52 @@ function randomIntLessThan(max) {
         .then(checkStatus)
         .then((response) => response.json())
         .then((data) => data.reduce(buildEntryDictionary, {}))
-        .then((data) => console.log("data...", data))
+        .then((data) => calculateAverages(data))
+        .then((data) => {
+          const sortedData = sort(data);
+          new Highcharts.Chart({
+            chart: {
+              type: "line",
+              renderTo: "raw"
+            },
+            title: {
+              text: "raw counts"
+            },
+            xAxis: {
+              type: "datetime",
+              dateTimeLabelFormats: { // don't display the dummy year
+                month: "%b %e",
+                // year: "%b"
+              },
+              title: {text: "Date"}
+            },
+            yAxis: {
+              title: {text: "# of eggs per day"},
+              min: 0
+            },
+            tooltip: {
+              headerFormat: '<b>{series.name}</b><br>',
+              pointFormat: '{point.x:%b %e}: {point.y:.0f} egg(s)'
+            },
+            series: [
+              // Define the data points. All series have a dummy year
+              // of 1970/71 in order to be compared on the same x axis. Note
+              // that in JavaScript, months start at 0 for January, 1 for February etc.
+              {
+                name: "2014",
+                data: extractDataFor(2014, sortedData)
+              },
+              {
+                name: "2015",
+                data: extractDataFor(2015, sortedData)
+              },
+              {
+                name: "2015",
+                data: extractDataFor(2016, sortedData)
+              }
+            ]
+          });
+        })
       ; // fetch pipeline
     };
 
