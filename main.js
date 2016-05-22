@@ -199,59 +199,66 @@
       ; // fetch pipeline
     };
 
+    function objectValues(obj) {
+      return Object.keys(obj).map((key) => obj[key]);
+    }
+
+    function objectKeyValPairs(obj) {
+      return Object.keys(obj).map((key) => [key, obj[key]]);
+    }
+
+    function randomIntLessThan(max) {
+      return Math.floor(max * Math.random());
+    }
+
+    function flattener(a, b) {
+      return a.concat(b);
+    }
+
+    function checkStatus(response) {
+      if (response.status >= 200 && response.status < 300) {
+        return response;
+      }
+      let error = new Error(response.statusText);
+      error.response = response;
+      throw error;
+    }
+
+    function padZero(string, length = 2) {
+      while (string.length < length) {
+        string = `0${string}`;
+      }
+      return string;
+    }
+
+    function sum(sum, n) {
+      return sum + n;
+    }
+
+    function keys(obj) {
+      return Object.keys(obj).sort();
+    }
+
+    function sortByFirstElement([a], [b]) {
+      if (a < b) {
+        return -1;
+      }
+      if (b < a) {
+        return 1;
+      }
+      return 0;
+    }
+
+    function range(start, end) {
+      // http://stackoverflow.com/a/19506234/303896
+      return Array
+        .apply(0, Array(end - start))
+        .map((element, index) => index + start);
+    }
+
   })();
 })(this);
 if (document.location.hash === "#show-chart") {
   document.getElementsByClassName("chart-placeholder")[0].remove();
   this.showChart();
-}
-
-function objectValues(obj) {
-  return Object.keys(obj).map((key) => obj[key]);
-}
-
-function objectKeyValPairs(obj) {
-  return Object.keys(obj).map((key) => [key, obj[key]]);
-}
-
-function randomIntLessThan(max) {
-  return Math.floor(max * Math.random());
-}
-
-function flattener(a, b) {
-  return a.concat(b);
-}
-
-function checkStatus(response) {
-  if (response.status >= 200 && response.status < 300) {
-    return response;
-  }
-  let error = new Error(response.statusText);
-  error.response = response;
-  throw error;
-}
-
-function padZero(string, length = 2) {
-  while (string.length < length) {
-    string = `0${string}`;
-  }
-  return string;
-}
-
-function sum(sum, n) {
-  return sum + n;
-}
-
-function keys(obj) {
-  return Object.keys(obj).sort();
-}
-
-function sortByFirstElement([a], [b]) {
-  if (a < b) {
-    return -1;
-  }
-  if (b < a) {
-    return 1;
-  }
-  return 0;
 }
