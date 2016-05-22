@@ -4,10 +4,28 @@
 
   const DATA_URL = "https://gist.githubusercontent.com/alxndr/c5cb1b4ceaf938d8801b60fd241fabf9/raw/7bf3877cd65b6e3e9ff4e64030edd2e2abb32707/eggcount.json";
 
+  function dateOfFirstEntry(dateEntries) {
+    const firstYear = keys(dateEntries)[0];
+    const firstMonth = keys(dateEntries[firstYear])[0];
+    const firstDay = keys(dateEntries[firstYear][firstMonth])[0];
+    const d = new Date(firstYear, firstMonth-1, firstDay);
+    d.setHours(1); // so other calculations of this date will be before...
+    return d;
+  }
+
+  let theFirstEntry;
   function runningAverageOverPriorDays({year: startingYear, month: startingMonth, day: startingDay}, numDays, dateEntries) {
-    const referenceDate = new Date(startingYear, startingMonth-1, startingDay);
-    const cutoffDate = new Date(startingYear, startingMonth-1, startingDay);
+    const monthZeroIndexed = startingMonth - 1;
+    const referenceDate = new Date(startingYear, monthZeroIndexed, startingDay);
+    const cutoffDate = new Date(startingYear, monthZeroIndexed, startingDay);
     cutoffDate.setDate(cutoffDate.getDate() - numDays);
+
+    if (!theFirstEntry) {
+      theFirstEntry = dateOfFirstEntry(dateEntries);
+    }
+    if (cutoffDate < theFirstEntry) {
+      return null;
+    }
     let dateInQuestion = cutoffDate;
     let dataToAverage = [];
     while (dateInQuestion <= referenceDate) {
@@ -83,11 +101,13 @@
   }
 
   function calculateAverages(entryDictionary) {
+    // TODO this should go for every day in the calendar, not starting from the days we have entries for...
+    // start from theFirstEntry...
     for (const year in entryDictionary) {
       for (const month in entryDictionary[year]) {
         for (const day in entryDictionary[year][month]) {
           entryDictionary[year][month][day].runningAverages = {
-            days7:  runningAverageOverPriorDays({year, month, day}, 7, entryDictionary),
+            days7 : runningAverageOverPriorDays({year, month, day}, 7, entryDictionary),
             days28: runningAverageOverPriorDays({year, month, day}, 28, entryDictionary),
             days84: runningAverageOverPriorDays({year, month, day}, 84, entryDictionary),
           };
@@ -214,7 +234,9 @@ function sum(sum, n) {
   return sum + n;
 }
 
-const keys = Object.keys.bind(Object);
+function keys(obj) {
+  return Object.keys(obj).sort();
+}
 
 function sortByFirstElement([a], [b]) {
   if (a < b) {
