@@ -2,6 +2,8 @@
 
 (function(context) {
 
+  const DATA_URL = "https://gist.githubusercontent.com/alxndr/c5cb1b4ceaf938d8801b60fd241fabf9/raw/7bf3877cd65b6e3e9ff4e64030edd2e2abb32707/eggcount.json";
+
   function runningAverageOverPriorDays({year: startingYear, month: startingMonth, day: startingDay}, numDays, dateEntries) {
     const referenceDate = new Date(startingYear, startingMonth-1, startingDay);
     const cutoffDate = new Date(startingYear, startingMonth-1, startingDay);
@@ -37,25 +39,18 @@
     return entries;
   }
 
-  function sortByFirstElement([a], [b]) {
-    if (a < b) {
-      return -1;
-    }
-    if (b < a) {
-      return 1;
-    }
-    return 0;
-  }
+  const FAKE_YEAR = 1970;
 
   function someETL(yearAcc, [year, yearData]) {
-    const transformedYearData = objectKeyValPairs(yearData)
+    const transformedYearData =
+      objectKeyValPairs(yearData)
       .sort(sortByFirstElement)
       .reduce((monthAcc, [month, monthData]) => {
-        const something =
+        const transformedMonthData =
           objectKeyValPairs(monthData)
           .sort(sortByFirstElement)
           .reduce((dayAcc, [day, dayData]) => {
-            const date = new Date(year, month-1, day);
+            const date = new Date(FAKE_YEAR, month-1, day);
             dayAcc.dateSeries.push(date);
             dayAcc.rawCount.push(dayData.count);
             dayAcc.avgDays7.push(dayData.runningAverages.days7);
@@ -65,21 +60,16 @@
           }, newEmptyDataThing())
         ;
         return {
-          dateSeries: monthAcc.dateSeries.concat(something.dateSeries),
-          rawCount: monthAcc.rawCount.concat(something.rawCount),
-          avgDays7: monthAcc.avgDays7.concat(something.avgDays7),
-          avgDays28: monthAcc.avgDays28.concat(something.avgDays28),
-          avgDays84: monthAcc.avgDays84.concat(something.avgDays84),
+          dateSeries: monthAcc.dateSeries.concat(transformedMonthData.dateSeries),
+          rawCount: monthAcc.rawCount.concat(transformedMonthData.rawCount),
+          avgDays7: monthAcc.avgDays7.concat(transformedMonthData.avgDays7),
+          avgDays28: monthAcc.avgDays28.concat(transformedMonthData.avgDays28),
+          avgDays84: monthAcc.avgDays84.concat(transformedMonthData.avgDays84),
         };
       }, newEmptyDataThing())
     ;
-    return {
-      dateSeries: yearAcc.dateSeries.concat(transformedYearData.dateSeries),
-      rawCount: yearAcc.rawCount.concat(transformedYearData.rawCount),
-      avgDays7: yearAcc.avgDays7.concat(transformedYearData.avgDays7),
-      avgDays28: yearAcc.avgDays28.concat(transformedYearData.avgDays28),
-      avgDays84: yearAcc.avgDays84.concat(transformedYearData.avgDays84),
-    };
+    yearAcc[year] = transformedYearData;
+    return yearAcc;
   }
 
   function newEmptyDataThing() {
@@ -107,51 +97,76 @@
     return entryDictionary;
   }
 
+  function extract(year, measure, mode, data) {
+    return {
+      name: year.toString(),
+      type: "scatter",
+      mode: mode,
+      x: data[year].dateSeries,
+      y: data[year][measure],
+    };
+  }
+
+  function plotLayout(opts) {
+    return Object.assign({
+      type: "date",
+      xaxis: {},
+      yaxis: {},
+      zerolinewidth: 0,
+    }, opts);
+  }
+
   (function() {
 
     context.showChart = function() {
-      if (!Plotly) console.error("no plotly!");
-      fetch('https://gist.githubusercontent.com/alxndr/c5cb1b4ceaf938d8801b60fd241fabf9/raw/1712731e092b6e94a350abb9a52e6a9b7b550fe2/eggcount.json')
+      if (!Plotly) {
+        console.error("no plotly!");
+        throw new Error("missing Plotly");
+      }
+      fetch(DATA_URL)
         .then(checkStatus)
         .then((response) => response.json())
+        .then((data) => {
+          const charts = document.getElementById("charts");
+          const link = document.createElement("a");
+          link.appendChild(document.createTextNode("data source"));
+          link.href = DATA_URL;
+          charts.appendChild(link);
+          return data;
+        })
         .then((data) => data.reduce(buildEntryDictionary, {}))
         .then((data) => calculateAverages(data)) // needs to be a separate pass
         .then((data) => {
-          const allTheData = objectKeyValPairs(data).reduce(someETL, newEmptyDataThing());
-          const {
-            dateSeries,
-            rawCount,
-            avgDays7,
-            avgDays28,
-            avgDays84
-          } = allTheData;
-          const dataForPlotly = [
-            {
-              type: "scatter",
-              mode: "markers",
-              x: dateSeries,
-              y: rawCount,
-            },
-            {
-              type: "scatter",
-              mode: "line",
-              x: dateSeries,
-              y: avgDays7,
-            },
-            {
-              type: "scatter",
-              mode: "line",
-              x: dateSeries,
-              y: avgDays28,
-            },
-            {
-              type: "scatter",
-              mode: "line",
-              x: dateSeries,
-              y: avgDays84,
-            },
-          ];
-          Plotly.newPlot("raw", dataForPlotly);
+          const allTheData = objectKeyValPairs(data).reduce(someETL, {});
+          const years = keys(allTheData);
+
+          Plotly.newPlot(
+            "raw",
+            years.map((year) => extract(year, "rawCount", "markers", allTheData)),
+            plotLayout({title: "eggs collected per day"}),
+            {displayModeBar: false}
+          );
+
+          Plotly.newPlot(
+            "1wk",
+            years.map((year) => extract(year, "avgDays7", "line", allTheData)),
+            plotLayout({title: "1-week rolling average"}),
+            {displayModeBar: false}
+          );
+
+          Plotly.newPlot(
+            "1mo",
+            years.map((year) => extract(year, "avgDays28", "line", allTheData)),
+            plotLayout({title: "1-month rolling average"}),
+            {displayModeBar: false}
+          );
+
+          Plotly.newPlot(
+            "3mo",
+            years.map((year) => extract(year, "avgDays84", "line", allTheData)),
+            plotLayout({title: "3-month rolling average"}),
+            {displayModeBar: false}
+          );
         })
       ; // fetch pipeline
     };
@@ -200,3 +215,13 @@ function sum(sum, n) {
 }
 
 const keys = Object.keys.bind(Object);
+
+function sortByFirstElement([a], [b]) {
+  if (a < b) {
+    return -1;
+  }
+  if (b < a) {
+    return 1;
+  }
+  return 0;
+}
