@@ -13,6 +13,14 @@
     return d;
   }
 
+  function dateOfLastEntry(dateEntries) {
+    const lastYear = keys(dateEntries).slice(-1)[0];
+    const lastMonth = keys(dateEntries[lastYear]).slice(-1)[0];
+    const lastDay = keys(dateEntries[lastYear][lastMonth]).slice(-1)[0];
+    d.setHours(1);
+    return d;
+  }
+
   let theFirstEntry;
   function runningAverageOverPriorDays({year: startingYear, month: startingMonth, day: startingDay}, numDays, dateEntries) {
     const monthZeroIndexed = startingMonth - 1;
@@ -102,7 +110,7 @@
 
   function calculateAverages(entryDictionary) {
     // TODO this should go for every day in the calendar, not starting from the days we have entries for...
-    // start from theFirstEntry...
+    // start from theFirstEntry... to dateOfLastEntry(entryDictionary)
     for (const year in entryDictionary) {
       for (const month in entryDictionary[year]) {
         for (const day in entryDictionary[year][month]) {
