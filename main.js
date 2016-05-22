@@ -122,7 +122,8 @@
             dateSeries,
             rawCount,
             avgDays7,
-            avgDays28
+            avgDays28,
+            avgDays84
           } = allTheData;
           const dataForPlotly = [
             {
@@ -142,6 +143,12 @@
               mode: "line",
               x: dateSeries,
               y: avgDays28,
+            },
+            {
+              type: "scatter",
+              mode: "line",
+              x: dateSeries,
+              y: avgDays84,
             },
           ];
           Plotly.newPlot("raw", dataForPlotly);
