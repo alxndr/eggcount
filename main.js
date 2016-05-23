@@ -173,7 +173,9 @@
   function plotLayout(opts) {
     return Object.assign({
       type: "date",
-      xaxis: {},
+      xaxis: {
+        tickformat: "%b",
+      },
       yaxis: {},
       // zerolinewidth: 0,
     }, opts);
