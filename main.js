@@ -170,6 +170,12 @@
     return Object.assign(defaults, opts);
   }
 
+  function bindExtractData(data) {
+    return function(year, metric, opts) {
+      return extractData(year, metric, data, opts);
+    };
+  }
+
   function plotLayout(opts) {
     return Object.assign({
       type: "date",
@@ -204,30 +210,32 @@
           const allTheData = objectKeyValPairs(data).reduce(someETL, {});
           const years = keys(allTheData);
 
+          const boundExtractData = bindExtractData(allTheData);
+
           Plotly.newPlot(
             "raw",
-            years.map((year) => extractData(year, "rawCount", allTheData, { mode: "markers" })),
+            years.map((year) => boundExtractData(year, "rawCount", { mode: "markers", opacity: 0.3, marker: { size: 15 } })),
             plotLayout({title: "eggs collected per day"}),
             {displayModeBar: false}
           );
 
           Plotly.newPlot(
             "1wk",
-            years.map((year) => extractData(year, "avgDays7", allTheData, { mode: "line" })),
+            years.map((year) => boundExtractData(year, "avgDays7", { mode: "line" })),
             plotLayout({title: "1-week rolling average"}),
             {displayModeBar: false}
           );
 
           Plotly.newPlot(
             "1mo",
-            years.map((year) => extractData(year, "avgDays28", allTheData, { mode: "line" })),
+            years.map((year) => boundExtractData(year, "avgDays28", { mode: "line" })),
             plotLayout({title: "1-month rolling average"}),
             {displayModeBar: false}
           );
 
           Plotly.newPlot(
             "3mo",
-            years.map((year) => extractData(year, "avgDays84", allTheData, { mode: "line" })),
+            years.map((year) => boundExtractData(year, "avgDays84", { mode: "line" })),
             plotLayout({title: "3-month rolling average"}),
             {displayModeBar: false}
           );
