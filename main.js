@@ -180,9 +180,10 @@
     return Object.assign({
       type: "date",
       xaxis: {
-        tickformat: "%b",
+        tickformat: "%b %d",
       },
-      yaxis: {},
+      yaxis: {
+      },
     }, opts);
   }
 
@@ -273,7 +274,5 @@
 
   })();
 })(this);
-if (document.location.hash === "#show-chart") {
-  document.getElementsByClassName("chart-placeholder")[0].remove();
-  this.showChart();
-}
+document.getElementsByClassName("chart-placeholder")[0].remove();
+this.showChart();
