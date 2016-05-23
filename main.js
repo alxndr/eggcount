@@ -160,14 +160,14 @@
     return entryDictionary;
   }
 
-  function extract(year, measure, mode, data) {
-    return {
+  function extractData(year, measure, data, opts) {
+    const defaults = {
       name: year.toString(),
       type: "scatter",
-      mode: mode,
       x: data[year].dateSeries,
       y: data[year][measure],
     };
+    return Object.assign(defaults, opts);
   }
 
   function plotLayout(opts) {
@@ -206,28 +206,28 @@
 
           Plotly.newPlot(
             "raw",
-            years.map((year) => extract(year, "rawCount", "markers", allTheData)),
+            years.map((year) => extractData(year, "rawCount", allTheData, { mode: "markers" })),
             plotLayout({title: "eggs collected per day"}),
             {displayModeBar: false}
           );
 
           Plotly.newPlot(
             "1wk",
-            years.map((year) => extract(year, "avgDays7", "line", allTheData)),
+            years.map((year) => extractData(year, "avgDays7", allTheData, { mode: "line" })),
             plotLayout({title: "1-week rolling average"}),
             {displayModeBar: false}
           );
 
           Plotly.newPlot(
             "1mo",
-            years.map((year) => extract(year, "avgDays28", "line", allTheData)),
+            years.map((year) => extractData(year, "avgDays28", allTheData, { mode: "line" })),
             plotLayout({title: "1-month rolling average"}),
             {displayModeBar: false}
           );
 
           Plotly.newPlot(
             "3mo",
-            years.map((year) => extract(year, "avgDays84", "line", allTheData)),
+            years.map((year) => extractData(year, "avgDays84", allTheData, { mode: "line" })),
             plotLayout({title: "3-month rolling average"}),
             {displayModeBar: false}
           );
