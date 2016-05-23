@@ -177,7 +177,6 @@
         tickformat: "%b",
       },
       yaxis: {},
-      // zerolinewidth: 0,
     }, opts);
   }
 
