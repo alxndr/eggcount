@@ -1,0 +1,7 @@
+#charts .placeholder {
+  width: 50%;
+  margin: 2em auto;
+  padding: 5em;
+  background: lightgray;
+  text-align: center;
+}

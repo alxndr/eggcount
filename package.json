@@ -1,0 +1,30 @@
+{
+  "name": "eggcount",
+  "version": "2.0.0",
+  "description": "Visualize how many eggs your chickens are laying. No, really.",
+  "main": "main.js",
+  "scripts": {
+    "lint": "eslint --config .eslintrc main.js",
+    "test": "echo No tests\\! && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alxndr/eggcount.git"
+  },
+  "author": "alxndr <alxndr+npm@gmail.com> http://eleven-twelve.net",
+  "homepage": "https://github.com/alxndr/eggcount#readme",
+  "bugs": {
+    "url": "https://github.com/alxndr/eggcount/issues"
+  },
+  "license": "MIT",
+  "keywords": [
+    "chickens",
+    "eggs",
+    "time series graphs",
+    "data visualization"
+  ],
+  "devDependencies": {
+    "babel-eslint": "^6.0.4",
+    "eslint": "^2.10.2"
+  }
+}
