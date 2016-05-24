@@ -180,44 +180,44 @@
     }, opts);
   }
 
+  function die() {
+    console.error("Uh oh! Expected Plotly to be globally available.");
+    const p = document.createElement("p"); // this is what JSX is for...
+    p.appendChild(document.createTextNode("Uh oh, can't find the graphing library! Try refreshing?"));
+    const charts = document.getElementById("charts");
+    const firstChart = charts.firstChild;
+    charts.insertBefore(p, firstChart);
+  }
+
+  function checkStatus(response) {
+    if (response.status >= 200 && response.status < 300) {
+      return response;
+    }
+    let error = new Error(response.statusText);
+    error.response = response;
+    throw error;
+  }
+
+  function extractJson(response) {
+    return response.json();
+  }
+
+  function removeNodesInNodelist(nodelist) {
+    let node;
+    while (node = nodelist[nodelist.length - 1]) { // need to recalculate placeholdersNodelist.length on each iteration
+      node.remove();
+    }
+  }
+
+  function appendLink(url) {
+    const charts = document.getElementById("charts");
+    const link = document.createElement("a");
+    link.appendChild(document.createTextNode("data source"));
+    link.href = url;
+    charts.appendChild(link);
+  }
+
   (function() {
-
-    function die() {
-      console.error("Uh oh! Expected Plotly to be globally available.");
-      const p = document.createElement("p"); // this is what JSX is for...
-      p.appendChild(document.createTextNode("Uh oh, can't find the graphing library! Try refreshing?"));
-      const charts = document.getElementById("charts");
-      const firstChart = charts.firstChild;
-      charts.insertBefore(p, firstChart);
-    }
-
-    function checkStatus(response) {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      }
-      let error = new Error(response.statusText);
-      error.response = response;
-      throw error;
-    }
-
-    function extractJson(response) {
-      return response.json();
-    }
-
-    function removeNodesInNodelist(nodelist) {
-      let node;
-      while (node = nodelist[nodelist.length - 1]) { // need to recalculate placeholdersNodelist.length on each iteration
-        node.remove();
-      }
-    }
-
-    function appendLink(url) {
-      const charts = document.getElementById("charts");
-      const link = document.createElement("a");
-      link.appendChild(document.createTextNode("data source"));
-      link.href = url;
-      charts.appendChild(link);
-    }
 
     context.showChart = function() {
       if (!window.Plotly) {
