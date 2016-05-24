@@ -181,6 +181,15 @@
 
   (function() {
 
+    function die() {
+      console.error("Uh oh! Expected Plotly to be globally available.");
+      const p = document.createElement("p"); // this is what JSX is for...
+      p.appendChild(document.createTextNode("Uh oh, can't find the graphing library! Try refreshing?"));
+      const charts = document.getElementById("charts");
+      const firstChart = charts.firstChild;
+      charts.insertBefore(p, firstChart);
+    }
+
     function checkStatus(response) {
       if (response.status >= 200 && response.status < 300) {
         return response;
@@ -198,9 +207,9 @@
     }
 
     context.showChart = function() {
-      if (!Plotly) {
-        console.error("no plotly!");
-        throw new Error("missing Plotly");
+      if (!window.Plotly) {
+        die();
+        return false;
       }
       fetch(DATA_URL)
         .then(checkStatus)
