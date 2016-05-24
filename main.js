@@ -250,35 +250,36 @@
           const years = keys(transformedData);
           const boundExtractData = bindExtractData(transformedData);
 
+          return [
+            {
+              domId: "raw",
+              data: years.map((year) => boundExtractData(year, "rawCount", { mode: "markers", opacity: 0.3, marker: { size: 15 } })),
+              layout: plotLayout({title: "eggs collected per day"}),
+              config: {displayModeBar: false}
+            },
+            {
+              domId: "1wk",
+              data: years.map((year) => boundExtractData(year, "avgDays7", { mode: "line" })),
+              layout: plotLayout({title: "1-week rolling average"}),
+              config: {displayModeBar: false}
+            },
+            {
+              domId: "1mo",
+              data: years.map((year) => boundExtractData(year, "avgDays28", { mode: "line" })),
+              layout: plotLayout({title: "1-month rolling average"}),
+              config: {displayModeBar: false}
+            },
+            {
+              domId: "3mo",
+              data: years.map((year) => boundExtractData(year, "avgDays84", { mode: "line" })),
+              layout: plotLayout({title: "3-month rolling average"}),
+              config: {displayModeBar: false}
+            },
+          ];
+        })
+        .then((configsForPlotly) => {
           removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
-
-          Plotly.newPlot(
-            "raw",
-            years.map((year) => boundExtractData(year, "rawCount", { mode: "markers", opacity: 0.3, marker: { size: 15 } })),
-            plotLayout({title: "eggs collected per day"}),
-            {displayModeBar: false}
-          );
-
-          Plotly.newPlot(
-            "1wk",
-            years.map((year) => boundExtractData(year, "avgDays7", { mode: "line" })),
-            plotLayout({title: "1-week rolling average"}),
-            {displayModeBar: false}
-          );
-
-          Plotly.newPlot(
-            "1mo",
-            years.map((year) => boundExtractData(year, "avgDays28", { mode: "line" })),
-            plotLayout({title: "1-month rolling average"}),
-            {displayModeBar: false}
-          );
-
-          Plotly.newPlot(
-            "3mo",
-            years.map((year) => boundExtractData(year, "avgDays84", { mode: "line" })),
-            plotLayout({title: "3-month rolling average"}),
-            {displayModeBar: false}
-          );
+          configsForPlotly.map(({domId, data, layout, config}) => Plotly.newPlot(domId, data, layout, config));
         })
       ; // fetch pipeline
     };
