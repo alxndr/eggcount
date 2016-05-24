@@ -233,9 +233,6 @@
         })
         .then(checkStatus)
         .then(extractJson)
-        .then((data) => {
-          return data;
-        })
         .then((data) => data.reduce(buildEntryDictionary, {}))
         .then((data) => calculateAverages(data)) // needs to be a separate pass
         .then((data) => {
