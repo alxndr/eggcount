@@ -2,7 +2,8 @@
 
 (function(context) {
 
-  const DATA_URL = "https://gist.githubusercontent.com/alxndr/c5cb1b4ceaf938d8801b60fd241fabf9/raw/7bf3877cd65b6e3e9ff4e64030edd2e2abb32707/eggcount.json";
+  const GIST_ID = "c5cb1b4ceaf938d8801b60fd241fabf9";
+  const GIST_FILENAME = "eggcount.json";
 
   function keys(obj) {
     return Object.keys(obj).sort();
@@ -206,20 +207,28 @@
       }
     }
 
+    function appendLink(url) {
+      const charts = document.getElementById("charts");
+      const link = document.createElement("a");
+      link.appendChild(document.createTextNode("data source"));
+      link.href = url;
+      charts.appendChild(link);
+    }
+
     context.showChart = function() {
       if (!window.Plotly) {
         die();
         return false;
       }
-      fetch(DATA_URL)
+      fetch(`https://api.github.com/gists/${GIST_ID}`)
+        .then((response) => response.json())
+        .then(({files, html_url}) => {
+          appendLink(html_url);
+          return fetch(files[GIST_FILENAME].raw_url);
+        })
         .then(checkStatus)
         .then((response) => response.json())
         .then((data) => {
-          const charts = document.getElementById("charts");
-          const link = document.createElement("a");
-          link.appendChild(document.createTextNode("data source"));
-          link.href = DATA_URL;
-          charts.appendChild(link);
           return data;
         })
         .then((data) => data.reduce(buildEntryDictionary, {}))
