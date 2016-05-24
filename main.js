@@ -46,6 +46,7 @@
     const lastYear = keys(dateEntries).slice(-1)[0];
     const lastMonth = keys(dateEntries[lastYear]).slice(-1)[0];
     const lastDay = keys(dateEntries[lastYear][lastMonth]).slice(-1)[0];
+    const d = new Date(lastYear, lastMonth-1, lastDay);
     d.setHours(1);
     return d;
   }
