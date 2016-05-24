@@ -4,7 +4,7 @@
   "description": "Visualize how many eggs your chickens are laying. No, really.",
   "main": "main.js",
   "scripts": {
-    "lint": "eslint --config .eslintrc.json main.js",
+    "lint": "eslint --config .eslintrc main.js",
     "test": "echo No tests\\! && exit 1"
   },
   "repository": {
