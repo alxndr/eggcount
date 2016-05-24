@@ -13,7 +13,7 @@
     while (string.length < length) {
       string = `0${string}`;
     }
-    return string;
+    return string.toString();
   }
 
   function sum(sum, n) {
@@ -51,6 +51,7 @@
     numDays,
     dateEntries
   ) {
+    // TODO this could early-exit when the dates are backwards...
     const monthZeroIndexed = startingMonth - 1;
     const referenceDate = new Date(startingYear, monthZeroIndexed, startingDay);
     const cutoffDate = new Date(startingYear, monthZeroIndexed, startingDay);
@@ -76,6 +77,10 @@
       }
       dateInQuestion.setDate(dateInQuestion.getDate() + 1);
     }
+
+    if (dataToAverage.length === 0) {
+      return null;
+    }
     return dataToAverage.reduce(sum) / numDays;
   }
 
@@ -94,6 +99,11 @@
   }
 
   const FAKE_YEAR = 1970;
+
+  function makeFakeDate(month, day) {
+    // need to normalize all dates to same year, so chart lib places all e.g. Jul 13s in the same X-axis position
+    return new Date(FAKE_YEAR, month-1, day);
+  }
 
   function buildSeparateDataSets(yearAcc, [year, yearData]) {
     /* feed through a .reduce(); will return an object shaped like...
@@ -114,21 +124,14 @@
           objectKeyValPairs(monthData)
           .sort(sortByFirstElement)
           .reduce((dayAcc, [day, dayData]) => {
-            const date = new Date(FAKE_YEAR, month-1, day);
-            dayAcc.dateSeries.push(date);
+            dayAcc.dateSeries.push(makeFakeDate(month, day)); // need to normalize all dates to same year, so chart lib places all e.g. Jul 13s in the same X-axis position
             dayAcc.rawCount.push(dayData.count);
-            dayAcc.avgDays7.push(dayData.runningAverages.days7);
-            dayAcc.avgDays28.push(dayData.runningAverages.days28);
-            dayAcc.avgDays84.push(dayData.runningAverages.days84);
             return dayAcc;
           }, newEmptyDataThing())
         ;
         return {
           dateSeries: monthAcc.dateSeries.concat(transformedMonthData.dateSeries),
           rawCount: monthAcc.rawCount.concat(transformedMonthData.rawCount),
-          avgDays7: monthAcc.avgDays7.concat(transformedMonthData.avgDays7),
-          avgDays28: monthAcc.avgDays28.concat(transformedMonthData.avgDays28),
-          avgDays84: monthAcc.avgDays84.concat(transformedMonthData.avgDays84),
         };
       }, newEmptyDataThing())
     ;
@@ -146,24 +149,75 @@
     };
   }
 
+  function rangeExclusive(start, end) {
+    // start-inclusive, end-noninclusive, pass integers not strings
+    // http://stackoverflow.com/a/19506234/303896
+    return Array
+      .apply(0, Array(end - start))
+      .map((element, index) => index + start);
+  }
+
+  function range(start, end) {
+    return rangeExclusive(start, end + 1);
+  }
+
   function calculateAverages(entryDictionary) {
-    // TODO this should go for every day in the calendar, not starting from the days we have entries for...
-    // start from theFirstEntry... to dateOfLastEntry(entryDictionary)
-    for (const year in entryDictionary) {
-      for (const month in entryDictionary[year]) {
-        for (const day in entryDictionary[year][month]) {
-          entryDictionary[year][month][day].runningAverages = {
-            days7 : runningAverageOverPriorDays({year, month, day}, 7, entryDictionary),
-            days28: runningAverageOverPriorDays({year, month, day}, 28, entryDictionary),
-            days84: runningAverageOverPriorDays({year, month, day}, 84, entryDictionary),
-          };
-        }
+    const years = keys(entryDictionary);
+    let averages = {};
+    // TODO fill gaps with partitions of next value...
+    range(parseInt(years[0]), parseInt(years.slice(-1)[0])).map((yearInt) => {
+      const year = yearInt.toString();
+      if (!entryDictionary[year]) {
+        return;
       }
-    }
-    return entryDictionary;
+      averages[year] = {};
+      averages[year].dateSeries = [];
+      averages[year].avgDays7 = [];
+      averages[year].avgDays28 = [];
+      averages[year].avgDays84 = [];
+      range(1, 12).map((monthInt) => {
+        const month = padZero(monthInt.toString()); // entry dictionary has zero-padded string as keys
+        if (!entryDictionary[year][month]) {
+          return;
+        }
+        range(1, 31).map((dayInt) => {
+          const date = new Date(yearInt, monthInt - 1, dayInt);
+          if (date.getDate() !== dayInt) {
+            return; // we auto-generated an invalid date, e.g. feb 31st
+          }
+          // TODO return if we're past the last date or before the first date
+          const day = padZero(dayInt.toString()); // entry dictionary has zero-padded string as keys
+          if (!averages[year][month]) {
+            averages[year][month] = {};
+          }
+          const days7 = runningAverageOverPriorDays({year, month, day}, 7, entryDictionary);
+          if (days7 !== null) {
+            const days28 = runningAverageOverPriorDays({year, month, day}, 28, entryDictionary);
+            const days84 = runningAverageOverPriorDays({year, month, day}, 84, entryDictionary);
+            const fakeDate = makeFakeDate(month, day);
+            averages[year][month][day] = {
+              dateSeries: fakeDate,
+              days7 : days7,
+              days28: days28,
+              days84: days84,
+            };
+            averages[year].dateSeries.push(fakeDate);
+            averages[year].avgDays7.push(days7);
+            averages[year].avgDays28.push(days28);
+            averages[year].avgDays84.push(days84);
+          }
+        });
+      });
+    });
+
+    return {
+      averages: averages,
+      rawData: entryDictionary
+    };
   }
 
   function extractData(year, measure, data, opts) {
+    // expects `data` to have a `[year]` property, and that object to have `.dateSeries` and `[measure]` properties
     const defaults = {
       name: year.toString(),
       type: "scatter",
@@ -244,34 +298,42 @@
         .then(checkStatus)
         .then(extractJson)
         .then((data) => data.reduce(buildEntryDictionary, {}))
-        .then((data) => calculateAverages(data)) // needs to be a separate pass
-        .then((data) => objectKeyValPairs(data).reduce(buildSeparateDataSets, {}))
-        .then((transformedData) => {
+        .then((data) => calculateAverages(data)) // need to calculate averages only once all data is collected
+        .then(({rawData, averages}) => {
+          const transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
           const years = keys(transformedData);
           const boundExtractData = bindExtractData(transformedData);
+
+          // TODO only years.map() once; map each year's data to the transformations it needs...
+
+          const dataForCollectedChart =
+                  years.map((year) => boundExtractData(year, "rawCount", { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
+
+          const dataFor7dayChart =
+                  years.map((year) => extractData(year, "avgDays7", averages, { mode: "line" }));
 
           return [
             {
               domId: "raw",
-              data: years.map((year) => boundExtractData(year, "rawCount", { mode: "markers", opacity: 0.3, marker: { size: 15 } })),
+              data: dataForCollectedChart,
               layout: plotLayout({title: "eggs collected per day"}),
               config: {displayModeBar: false}
             },
             {
               domId: "1wk",
-              data: years.map((year) => boundExtractData(year, "avgDays7", { mode: "line" })),
+              data: dataFor7dayChart,
               layout: plotLayout({title: "1-week rolling average"}),
               config: {displayModeBar: false}
             },
             {
               domId: "1mo",
-              data: years.map((year) => boundExtractData(year, "avgDays28", { mode: "line" })),
+              data: years.map((year) => extractData(year, "avgDays28", averages, { mode: "line" })),
               layout: plotLayout({title: "1-month rolling average"}),
               config: {displayModeBar: false}
             },
             {
               domId: "3mo",
-              data: years.map((year) => boundExtractData(year, "avgDays84", { mode: "line" })),
+              data: years.map((year) => extractData(year, "avgDays84", averages, { mode: "line" })),
               layout: plotLayout({title: "3-month rolling average"}),
               config: {displayModeBar: false}
             },
@@ -303,13 +365,6 @@
 
     function _flattener(a, b) {
       return a.concat(b);
-    }
-
-    function _range(start, end) {
-      // http://stackoverflow.com/a/19506234/303896
-      return Array
-        .apply(0, Array(end - start))
-        .map((element, index) => index + start);
     }
 
   })();
