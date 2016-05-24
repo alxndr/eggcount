@@ -275,5 +275,4 @@
 
   })();
 })(this);
-document.getElementsByClassName("chart-placeholder")[0].remove();
 this.showChart();
