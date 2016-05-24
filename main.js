@@ -42,15 +42,6 @@
     return d;
   }
 
-  function dateOfLastEntry(dateEntries) {
-    const lastYear = keys(dateEntries).slice(-1)[0];
-    const lastMonth = keys(dateEntries[lastYear]).slice(-1)[0];
-    const lastDay = keys(dateEntries[lastYear][lastMonth]).slice(-1)[0];
-    const d = new Date(lastYear, lastMonth-1, lastDay);
-    d.setHours(1);
-    return d;
-  }
-
   let theFirstEntry;
   function runningAverageOverPriorDays(
     { year: startingYear,
@@ -190,6 +181,15 @@
 
   (function() {
 
+    function checkStatus(response) {
+      if (response.status >= 200 && response.status < 300) {
+        return response;
+      }
+      let error = new Error(response.statusText);
+      error.response = response;
+      throw error;
+    }
+
     context.showChart = function() {
       if (!Plotly) {
         console.error("no plotly!");
@@ -245,28 +245,28 @@
       ; // fetch pipeline
     };
 
-    function objectValues(obj) {
+    function _dateOfLastEntry(dateEntries) {
+      const lastYear = keys(dateEntries).slice(-1)[0];
+      const lastMonth = keys(dateEntries[lastYear]).slice(-1)[0];
+      const lastDay = keys(dateEntries[lastYear][lastMonth]).slice(-1)[0];
+      const d = new Date(lastYear, lastMonth-1, lastDay);
+      d.setHours(1);
+      return d;
+    }
+
+    function _objectValues(obj) {
       return keys(obj).map((key) => obj[key]);
     }
 
-    function randomIntLessThan(max) {
+    function _randomIntLessThan(max) {
       return Math.floor(max * Math.random());
     }
 
-    function flattener(a, b) {
+    function _flattener(a, b) {
       return a.concat(b);
     }
 
-    function checkStatus(response) {
-      if (response.status >= 200 && response.status < 300) {
-        return response;
-      }
-      let error = new Error(response.statusText);
-      error.response = response;
-      throw error;
-    }
-
-    function range(start, end) {
+    function _range(start, end) {
       // http://stackoverflow.com/a/19506234/303896
       return Array
         .apply(0, Array(end - start))
