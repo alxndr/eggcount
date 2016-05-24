@@ -225,6 +225,7 @@
         return false;
       }
       fetch(`https://api.github.com/gists/${GIST_ID}`)
+        .then(checkStatus)
         .then(extractJson)
         .then(({files, html_url}) => {
           appendLink(html_url);
