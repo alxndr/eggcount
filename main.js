@@ -190,6 +190,13 @@
       throw error;
     }
 
+    function removeNodesInNodelist(nodelist) {
+      let node;
+      while (node = nodelist[nodelist.length - 1]) { // need to recalculate placeholdersNodelist.length on each iteration
+        node.remove();
+      }
+    }
+
     context.showChart = function() {
       if (!Plotly) {
         console.error("no plotly!");
@@ -213,6 +220,8 @@
           const years = keys(allTheData);
 
           const boundExtractData = bindExtractData(allTheData);
+
+          removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
 
           Plotly.newPlot(
             "raw",
