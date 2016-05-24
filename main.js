@@ -95,7 +95,17 @@
 
   const FAKE_YEAR = 1970;
 
-  function someETL(yearAcc, [year, yearData]) {
+  function buildSeparateDataSets(yearAcc, [year, yearData]) {
+    /* feed through a .reduce(); will return an object shaped like...
+     {
+       2014: {
+         dateSeries: [...]
+         rawCount: [...]
+         averages...
+       },
+       ...
+     }
+     */
     const transformedYearData =
       objectKeyValPairs(yearData)
       .sort(sortByFirstElement)
@@ -235,11 +245,10 @@
         .then(extractJson)
         .then((data) => data.reduce(buildEntryDictionary, {}))
         .then((data) => calculateAverages(data)) // needs to be a separate pass
-        .then((data) => {
-          const allTheData = objectKeyValPairs(data).reduce(someETL, {});
-          const years = keys(allTheData);
-
-          const boundExtractData = bindExtractData(allTheData);
+        .then((data) => objectKeyValPairs(data).reduce(buildSeparateDataSets, {}))
+        .then((transformedData) => {
+          const years = keys(transformedData);
+          const boundExtractData = bindExtractData(transformedData);
 
           removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
 
