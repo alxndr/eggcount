@@ -200,6 +200,10 @@
       throw error;
     }
 
+    function extractJson(response) {
+      return response.json();
+    }
+
     function removeNodesInNodelist(nodelist) {
       let node;
       while (node = nodelist[nodelist.length - 1]) { // need to recalculate placeholdersNodelist.length on each iteration
@@ -221,13 +225,13 @@
         return false;
       }
       fetch(`https://api.github.com/gists/${GIST_ID}`)
-        .then((response) => response.json())
+        .then(extractJson)
         .then(({files, html_url}) => {
           appendLink(html_url);
           return fetch(files[GIST_FILENAME].raw_url);
         })
         .then(checkStatus)
-        .then((response) => response.json())
+        .then(extractJson)
         .then((data) => {
           return data;
         })
