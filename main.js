@@ -43,7 +43,7 @@
     return d;
   }
 
-  let theFirstEntry;
+  let theFirstEntry; // this is "global"
   function runningAverageOverPriorDays(
     { year: startingYear,
       month: startingMonth,
@@ -51,13 +51,12 @@
     numDays,
     dateEntries
   ) {
-    // TODO this could early-exit when the dates are backwards...
     const monthZeroIndexed = startingMonth - 1;
     const referenceDate = new Date(startingYear, monthZeroIndexed, startingDay);
     const cutoffDate = new Date(startingYear, monthZeroIndexed, startingDay);
     cutoffDate.setDate(cutoffDate.getDate() - numDays);
 
-    if (!theFirstEntry) {
+    if (!theFirstEntry) { // this is "global"
       theFirstEntry = dateOfFirstEntry(dateEntries);
     }
     if (cutoffDate < theFirstEntry) {
@@ -82,20 +81,6 @@
       return null;
     }
     return dataToAverage.reduce(sum) / numDays;
-  }
-
-  function buildEntryDictionary(entries, {date, count}) {
-    const [year, month, day] = date.split("-");
-    if (!entries[year]) {
-      entries[year] = {};
-    }
-    if (!entries[year][month]) {
-      entries[year][month] = {};
-    }
-    entries[year][month][day] = {
-      count: count,
-    };
-    return entries;
   }
 
   const FAKE_YEAR = 1970;
@@ -281,6 +266,20 @@
     charts.appendChild(link);
   }
 
+  function buildAThing(data) {
+    return data.reduce(function(entries, {date, count}) {
+      const [year, month, day] = date.split("-");
+      if (!entries[year]) {
+        entries[year] = {};
+      }
+      if (!entries[year][month]) {
+        entries[year][month] = {};
+      }
+      entries[year][month][day] = {count: count};
+      return entries;
+    }, {});
+  }
+
   (function() {
 
     context.showChart = function() {
@@ -297,7 +296,7 @@
         })
         .then(checkStatus)
         .then(extractJson)
-        .then((data) => data.reduce(buildEntryDictionary, {}))
+        .then(buildAThing)
         .then((data) => calculateAverages(data)) // need to calculate averages only once all data is collected
         .then(({rawData, averages}) => {
           const transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
