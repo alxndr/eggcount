@@ -184,12 +184,6 @@
             const days28 = runningAverageOverPriorDays({year, month, day}, 28, entryDictionary);
             const days84 = runningAverageOverPriorDays({year, month, day}, 84, entryDictionary);
             const fakeDate = makeFakeDate(month, day);
-            averages[year][month][day] = {
-              dateSeries: fakeDate,
-              days7 : days7,
-              days28: days28,
-              days84: days84,
-            };
             averages[year].dateSeries.push(fakeDate);
             averages[year].avgDays7.push(days7);
             averages[year].avgDays28.push(days28);
