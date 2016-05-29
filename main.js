@@ -150,6 +150,10 @@
     const years = keys(entryDictionary);
     let averages = {};
     // TODO fill gaps with partitions of next value...
+
+    // iterates through all days between first and last data points, and
+    // calculates a bunch of numbers, and
+    // mutates the `averages` object, filling it up with the numbers.
     range(parseInt(years[0]), parseInt(years.slice(-1)[0])).map((yearInt) => {
       const year = yearInt.toString();
       if (!entryDictionary[year]) {
