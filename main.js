@@ -9,7 +9,7 @@
     return Object.keys(obj).sort();
   }
 
-  function padZero(string, length = 2) {
+  function padZero(string, length = 2) { // TODO change from taking a string to just calling .toString on it (so either string or int)
     while (string.length < length) {
       string = `0${string}`;
     }
@@ -153,7 +153,6 @@
   function calculateAverages(entryDictionary) {
     const years = keys(entryDictionary);
     let averages = {};
-    // TODO fill gaps with partitions of next value...
 
     // iterates through all days between first and last data points, and
     // calculates a bunch of numbers, and
@@ -196,7 +195,6 @@
         });
       });
     });
-
     return {
       averages: averages,
       rawData: entryDictionary
@@ -304,33 +302,23 @@
   function constructDict(data) {
     const infilledData = data.sort(sortInput).reduce(function(smoothed, {date, count}) {
       if (!smoothed.length) { // the first measurement. no need to process any further.
-        // ...first date is set
         smoothed.push({date, count});
         return smoothed;
       }
-      // if there's a gap between current date and last-set-date
       const lastMeasurement = last(smoothed);
       const difference = dayDifference(lastMeasurement.date, date);
-      if (difference > 1) {
+      if (difference <= 1) {
+        smoothed.push({date, count});
+      } else {
         const lastMeasurementDate = new Date(lastMeasurement.date.split("-"));
-        // average...
         const dailyAverage = count / difference;
-        // console.log(`average for each of ${difference - 1} missing days: ${dailyAverage}`);
-        // backfill...
-        // ...for each missing date...
         for (let i = 1; i < difference; i++) {
           const missingDate = new Date(lastMeasurementDate);
           missingDate.setDate(lastMeasurementDate.getDate() + i);
-          console.log("constructed...", missingDate);
-          console.log("something...", ymdFromDate(missingDate));
           smoothed.push({date: ymdFromDate(missingDate), count: dailyAverage});
         }
-        // add the dailyAverage for the current date as well
         smoothed.push({date, count: dailyAverage});
-      } else {
-        smoothed.push({date, count});
       }
-      // then that is the new dict?
       return smoothed;
     }, []);
     return infilledData.reduce(function(entries, {date, count}) {
