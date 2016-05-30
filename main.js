@@ -43,6 +43,10 @@
     return d;
   }
 
+  function ymd(year, month, day) {
+    return [year, padZero(month.toString()), padZero(day.toString())].join("-");
+  }
+
   let theFirstEntry; // this is "global"
   function runningAverageOverPriorDays(
     { year: startingYear,
@@ -264,8 +268,72 @@
     charts.appendChild(link);
   }
 
-  function buildAThing(data) {
-    return data.reduce(function(entries, {date, count}) {
+  function sortInput(a, b) {
+    const aDate = new Date(a.date.split("-"));
+    const bDate = new Date(b.date.split("-"));
+    if (aDate < bDate) {
+      return -1;
+    }
+    return 1;
+  }
+
+  function last(array) {
+    // return the last element in the array
+    return array.slice(-1)[0];
+  }
+
+  const MSEC_IN_1_SEC = 1000;
+  const SEC_IN_1_MIN = 60;
+  const MIN_IN_1_HR = 60;
+  const HR_IN_1_DAY = 24;
+  function dayDifference(earlierDate, laterDate) {
+    // params are strings of yyyy-mm-dd
+    return ( new Date(laterDate.split("-")) - new Date(earlierDate.split("-")) )
+      / MSEC_IN_1_SEC / SEC_IN_1_MIN / MIN_IN_1_HR / HR_IN_1_DAY
+    ;
+  }
+
+  function ymdFromDate(date) {
+    return ymd(
+      date.getYear() + 1900,
+      date.getMonth() + 1,
+      date.getDate()
+    );
+  }
+
+  function constructDict(data) {
+    const infilledData = data.sort(sortInput).reduce(function(smoothed, {date, count}) {
+      if (!smoothed.length) { // the first measurement. no need to process any further.
+        // ...first date is set
+        smoothed.push({date, count});
+        return smoothed;
+      }
+      // if there's a gap between current date and last-set-date
+      const lastMeasurement = last(smoothed);
+      const difference = dayDifference(lastMeasurement.date, date);
+      if (difference > 1) {
+        const lastMeasurementDate = new Date(lastMeasurement.date.split("-"));
+        // average...
+        const dailyAverage = count / difference;
+        // console.log(`average for each of ${difference - 1} missing days: ${dailyAverage}`);
+        // backfill...
+        // ...for each missing date...
+        for (let i = 1; i < difference; i++) {
+          const missingDate = new Date(lastMeasurementDate);
+          missingDate.setDate(lastMeasurementDate.getDate() + i);
+          console.log("constructed...", missingDate);
+          console.log("something...", ymdFromDate(missingDate));
+          smoothed.push({date: ymdFromDate(missingDate), count: dailyAverage});
+        }
+        // add the dailyAverage for the current date as well
+        smoothed.push({date, count: dailyAverage});
+      } else {
+        smoothed.push({date, count});
+      }
+      // then that is the new dict?
+      return smoothed;
+    }, []);
+    return infilledData.reduce(function(entries, {date, count}) {
       const [year, month, day] = date.split("-");
       if (!entries[year]) {
         entries[year] = {};
@@ -294,7 +362,7 @@
         })
         .then(checkStatus)
         .then(extractJson)
-        .then(buildAThing)
+        .then(constructDict)
         .then((data) => calculateAverages(data)) // need to calculate averages only once all data is collected
         .then(({rawData, averages}) => {
           const transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
