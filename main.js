@@ -9,7 +9,8 @@
     return Object.keys(obj).sort();
   }
 
-  function padZero(string, length = 2) {
+  function padZero(thing, length = 2) {
+    let string = thing.toString();
     while (string.length < length) {
       string = `0${string}`;
     }
@@ -43,7 +44,7 @@
     return d;
   }
 
-  let theFirstEntry;
+  let theFirstEntry; // this is "global"
   function runningAverageOverPriorDays(
     { year: startingYear,
       month: startingMonth,
@@ -56,7 +57,7 @@
     const cutoffDate = new Date(startingYear, monthZeroIndexed, startingDay);
     cutoffDate.setDate(cutoffDate.getDate() - numDays);
 
-    if (!theFirstEntry) {
+    if (!theFirstEntry) { // this is "global"
       theFirstEntry = dateOfFirstEntry(dateEntries);
     }
     if (cutoffDate < theFirstEntry) {
@@ -66,8 +67,8 @@
     let dataToAverage = [];
     while (dateInQuestion <= referenceDate) {
       const year = (dateInQuestion.getYear() + 1900).toString();
-      const month = padZero((dateInQuestion.getMonth() + 1).toString());
-      const day = padZero((dateInQuestion.getDate()).toString());
+      const month = padZero(dateInQuestion.getMonth() + 1);
+      const day = padZero(dateInQuestion.getDate());
       if (dateEntries[year] && dateEntries[year][month]) {
         const dayData = dateEntries[year][month][day];
         if (dayData) {
@@ -76,24 +77,19 @@
       }
       dateInQuestion.setDate(dateInQuestion.getDate() + 1);
     }
+
+    if (dataToAverage.length === 0) {
+      return null;
+    }
     return dataToAverage.reduce(sum) / numDays;
   }
 
-  function buildEntryDictionary(entries, {date, count}) {
-    const [year, month, day] = date.split("-");
-    if (!entries[year]) {
-      entries[year] = {};
-    }
-    if (!entries[year][month]) {
-      entries[year][month] = {};
-    }
-    entries[year][month][day] = {
-      count: count,
-    };
-    return entries;
-  }
-
   const FAKE_YEAR = 1970;
+
+  function makeFakeDate(month, day) {
+    // need to normalize all dates to same year, so chart lib places all e.g. Jul 13s in the same X-axis position
+    return new Date(FAKE_YEAR, month-1, day);
+  }
 
   function buildSeparateDataSets(yearAcc, [year, yearData]) {
     /* feed through a .reduce(); will return an object shaped like...
@@ -114,21 +110,14 @@
           objectKeyValPairs(monthData)
           .sort(sortByFirstElement)
           .reduce((dayAcc, [day, dayData]) => {
-            const date = new Date(FAKE_YEAR, month-1, day);
-            dayAcc.dateSeries.push(date);
+            dayAcc.dateSeries.push(makeFakeDate(month, day)); // need to normalize all dates to same year, so chart lib places all e.g. Jul 13s in the same X-axis position
             dayAcc.rawCount.push(dayData.count);
-            dayAcc.avgDays7.push(dayData.runningAverages.days7);
-            dayAcc.avgDays28.push(dayData.runningAverages.days28);
-            dayAcc.avgDays84.push(dayData.runningAverages.days84);
             return dayAcc;
           }, newEmptyDataThing())
         ;
         return {
           dateSeries: monthAcc.dateSeries.concat(transformedMonthData.dateSeries),
           rawCount: monthAcc.rawCount.concat(transformedMonthData.rawCount),
-          avgDays7: monthAcc.avgDays7.concat(transformedMonthData.avgDays7),
-          avgDays28: monthAcc.avgDays28.concat(transformedMonthData.avgDays28),
-          avgDays84: monthAcc.avgDays84.concat(transformedMonthData.avgDays84),
         };
       }, newEmptyDataThing())
     ;
@@ -146,24 +135,71 @@
     };
   }
 
+  function rangeExclusive(start, end) {
+    // start-inclusive, end-noninclusive, pass integers not strings
+    // http://stackoverflow.com/a/19506234/303896
+    return Array
+      .apply(0, Array(end - start))
+      .map((element, index) => index + start);
+  }
+
+  function range(start, end) {
+    return rangeExclusive(start, end + 1);
+  }
+
   function calculateAverages(entryDictionary) {
-    // TODO this should go for every day in the calendar, not starting from the days we have entries for...
-    // start from theFirstEntry... to dateOfLastEntry(entryDictionary)
-    for (const year in entryDictionary) {
-      for (const month in entryDictionary[year]) {
-        for (const day in entryDictionary[year][month]) {
-          entryDictionary[year][month][day].runningAverages = {
-            days7 : runningAverageOverPriorDays({year, month, day}, 7, entryDictionary),
-            days28: runningAverageOverPriorDays({year, month, day}, 28, entryDictionary),
-            days84: runningAverageOverPriorDays({year, month, day}, 84, entryDictionary),
-          };
-        }
+    const years = keys(entryDictionary);
+    let averages = {};
+
+    // iterates through all days between first and last data points, and
+    // calculates a bunch of numbers, and
+    // mutates the `averages` object, filling it up with the numbers.
+    range(parseInt(years[0]), parseInt(years.slice(-1)[0])).map((yearInt) => {
+      const year = yearInt.toString();
+      if (!entryDictionary[year]) {
+        return;
       }
-    }
-    return entryDictionary;
+      averages[year] = {};
+      averages[year].dateSeries = [];
+      averages[year].avgDays7 = [];
+      averages[year].avgDays28 = [];
+      averages[year].avgDays84 = [];
+      range(1, 12).map((monthInt) => {
+        const month = padZero(monthInt); // entry dictionary has zero-padded string as keys
+        if (!entryDictionary[year][month]) {
+          return;
+        }
+        range(1, 31).map((dayInt) => {
+          const date = new Date(yearInt, monthInt - 1, dayInt);
+          if (date.getDate() !== dayInt) {
+            return; // we auto-generated an invalid date, e.g. feb 31st
+          }
+          // TODO return if we're past the last date or before the first date
+          const day = padZero(dayInt); // entry dictionary has zero-padded string as keys
+          if (!averages[year][month]) {
+            averages[year][month] = {};
+          }
+          const days7 = runningAverageOverPriorDays({year, month, day}, 7, entryDictionary);
+          if (days7 !== null) {
+            const days28 = runningAverageOverPriorDays({year, month, day}, 28, entryDictionary);
+            const days84 = runningAverageOverPriorDays({year, month, day}, 84, entryDictionary);
+            const fakeDate = makeFakeDate(month, day);
+            averages[year].dateSeries.push(fakeDate);
+            averages[year].avgDays7.push(days7);
+            averages[year].avgDays28.push(days28);
+            averages[year].avgDays84.push(days84);
+          }
+        });
+      });
+    });
+    return {
+      averages: averages,
+      rawData: entryDictionary
+    };
   }
 
   function extractData(year, measure, data, opts) {
+    // expects `data` to have a `[year]` property, and that object to have `.dateSeries` and `[measure]` properties
     const defaults = {
       name: year.toString(),
       type: "scatter",
@@ -227,8 +263,75 @@
     charts.appendChild(link);
   }
 
-  (function() {
+  function sortInput(a, b) {
+    const aDate = new Date(a.date.split("-"));
+    const bDate = new Date(b.date.split("-"));
+    if (aDate < bDate) {
+      return -1;
+    }
+    return 1;
+  }
 
+  function last(array) {
+    // return the last element in the array
+    return array.slice(-1)[0];
+  }
+
+  const MSEC_IN_1_SEC = 1000;
+  const SEC_IN_1_MIN = 60;
+  const MIN_IN_1_HR = 60;
+  const HR_IN_1_DAY = 24;
+  function dayDifference(earlierDate, laterDate) {
+    // params are strings of yyyy-mm-dd
+    return ( new Date(laterDate.split("-")) - new Date(earlierDate.split("-")) )
+      / MSEC_IN_1_SEC / SEC_IN_1_MIN / MIN_IN_1_HR / HR_IN_1_DAY
+    ;
+  }
+
+  function ymdFromDate(date) {
+    return [
+      date.getYear() + 1900,
+      date.getMonth() + 1,
+      date.getDate()
+    ].join("-");
+  }
+
+  function constructDict(data) {
+    const infilledData = data.sort(sortInput).reduce(function(smoothed, {date, count}) {
+      if (!smoothed.length) { // the first measurement. no need to process any further.
+        smoothed.push({date, count});
+        return smoothed;
+      }
+      const lastMeasurement = last(smoothed);
+      const difference = dayDifference(lastMeasurement.date, date);
+      if (difference <= 1) {
+        smoothed.push({date, count});
+      } else {
+        const lastMeasurementDate = new Date(lastMeasurement.date.split("-"));
+        const dailyAverage = count / difference;
+        for (let i = 1; i < difference; i++) {
+          const missingDate = new Date(lastMeasurementDate);
+          missingDate.setDate(lastMeasurementDate.getDate() + i);
+          smoothed.push({date: ymdFromDate(missingDate), count: dailyAverage});
+        }
+        smoothed.push({date, count: dailyAverage});
+      }
+      return smoothed;
+    }, []);
+    return infilledData.reduce(function(entries, {date, count}) {
+      const [year, month, day] = date.split("-");
+      if (!entries[year]) {
+        entries[year] = {};
+      }
+      if (!entries[year][month]) {
+        entries[year][month] = {};
+      }
+      entries[year][month][day] = {count: count};
+      return entries;
+    }, {});
+  }
+
+  (function() {
     context.showChart = function() {
       if (!window.Plotly) {
         die();
@@ -243,35 +346,43 @@
         })
         .then(checkStatus)
         .then(extractJson)
-        .then((data) => data.reduce(buildEntryDictionary, {}))
-        .then((data) => calculateAverages(data)) // needs to be a separate pass
-        .then((data) => objectKeyValPairs(data).reduce(buildSeparateDataSets, {}))
-        .then((transformedData) => {
+        .then(constructDict)
+        .then((data) => calculateAverages(data)) // need to calculate averages only once all data is collected
+        .then(({rawData, averages}) => {
+          const transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
           const years = keys(transformedData);
           const boundExtractData = bindExtractData(transformedData);
+
+          // TODO only years.map() once; map each year's data to the transformations it needs...
+
+          const dataForCollectedChart =
+                  years.map((year) => boundExtractData(year, "rawCount", { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
+
+          const dataFor7dayChart =
+                  years.map((year) => extractData(year, "avgDays7", averages, { mode: "line" }));
 
           return [
             {
               domId: "raw",
-              data: years.map((year) => boundExtractData(year, "rawCount", { mode: "markers", opacity: 0.3, marker: { size: 15 } })),
+              data: dataForCollectedChart,
               layout: plotLayout({title: "eggs collected per day"}),
               config: {displayModeBar: false}
             },
             {
               domId: "1wk",
-              data: years.map((year) => boundExtractData(year, "avgDays7", { mode: "line" })),
+              data: dataFor7dayChart,
               layout: plotLayout({title: "1-week rolling average"}),
               config: {displayModeBar: false}
             },
             {
               domId: "1mo",
-              data: years.map((year) => boundExtractData(year, "avgDays28", { mode: "line" })),
+              data: years.map((year) => extractData(year, "avgDays28", averages, { mode: "line" })),
               layout: plotLayout({title: "1-month rolling average"}),
               config: {displayModeBar: false}
             },
             {
               domId: "3mo",
-              data: years.map((year) => boundExtractData(year, "avgDays84", { mode: "line" })),
+              data: years.map((year) => extractData(year, "avgDays84", averages, { mode: "line" })),
               layout: plotLayout({title: "3-month rolling average"}),
               config: {displayModeBar: false}
             },
@@ -283,35 +394,6 @@
         })
       ; // fetch pipeline
     };
-
-    function _dateOfLastEntry(dateEntries) {
-      const lastYear = keys(dateEntries).slice(-1)[0];
-      const lastMonth = keys(dateEntries[lastYear]).slice(-1)[0];
-      const lastDay = keys(dateEntries[lastYear][lastMonth]).slice(-1)[0];
-      const d = new Date(lastYear, lastMonth-1, lastDay);
-      d.setHours(1);
-      return d;
-    }
-
-    function _objectValues(obj) {
-      return keys(obj).map((key) => obj[key]);
-    }
-
-    function _randomIntLessThan(max) {
-      return Math.floor(max * Math.random());
-    }
-
-    function _flattener(a, b) {
-      return a.concat(b);
-    }
-
-    function _range(start, end) {
-      // http://stackoverflow.com/a/19506234/303896
-      return Array
-        .apply(0, Array(end - start))
-        .map((element, index) => index + start);
-    }
-
   })();
 })(this);
 this.showChart();
