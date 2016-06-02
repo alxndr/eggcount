@@ -9,11 +9,12 @@
     return Object.keys(obj).sort();
   }
 
-  function padZero(string, length = 2) { // TODO change from taking a string to just calling .toString on it (so either string or int)
+  function padZero(thing, length = 2) {
+    let string = thing.toString();
     while (string.length < length) {
       string = `0${string}`;
     }
-    return string.toString();
+    return string;
   }
 
   function sum(sum, n) {
@@ -43,10 +44,6 @@
     return d;
   }
 
-  function ymd(year, month, day) {
-    return [year, padZero(month.toString()), padZero(day.toString())].join("-");
-  }
-
   let theFirstEntry; // this is "global"
   function runningAverageOverPriorDays(
     { year: startingYear,
@@ -70,8 +67,8 @@
     let dataToAverage = [];
     while (dateInQuestion <= referenceDate) {
       const year = (dateInQuestion.getYear() + 1900).toString();
-      const month = padZero((dateInQuestion.getMonth() + 1).toString());
-      const day = padZero((dateInQuestion.getDate()).toString());
+      const month = padZero(dateInQuestion.getMonth() + 1);
+      const day = padZero(dateInQuestion.getDate());
       if (dateEntries[year] && dateEntries[year][month]) {
         const dayData = dateEntries[year][month][day];
         if (dayData) {
@@ -168,7 +165,7 @@
       averages[year].avgDays28 = [];
       averages[year].avgDays84 = [];
       range(1, 12).map((monthInt) => {
-        const month = padZero(monthInt.toString()); // entry dictionary has zero-padded string as keys
+        const month = padZero(monthInt); // entry dictionary has zero-padded string as keys
         if (!entryDictionary[year][month]) {
           return;
         }
@@ -178,7 +175,7 @@
             return; // we auto-generated an invalid date, e.g. feb 31st
           }
           // TODO return if we're past the last date or before the first date
-          const day = padZero(dayInt.toString()); // entry dictionary has zero-padded string as keys
+          const day = padZero(dayInt); // entry dictionary has zero-padded string as keys
           if (!averages[year][month]) {
             averages[year][month] = {};
           }
@@ -292,11 +289,11 @@
   }
 
   function ymdFromDate(date) {
-    return ymd(
+    return [
       date.getYear() + 1900,
       date.getMonth() + 1,
       date.getDate()
-    );
+    ].join("-");
   }
 
   function constructDict(data) {
