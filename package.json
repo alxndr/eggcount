@@ -4,6 +4,7 @@
   "description": "Visualize how many eggs your chickens are laying. No, really.",
   "main": "main.js",
   "scripts": {
+    "build": "webpack ./main.js bundle.js",
     "lint": "eslint --config .eslintrc main.js",
     "test": "echo No tests\\! && exit 1"
   },

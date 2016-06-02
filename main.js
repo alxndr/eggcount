@@ -5,35 +5,18 @@
   const GIST_ID = "c5cb1b4ceaf938d8801b60fd241fabf9";
   const GIST_FILENAME = "eggcount.json";
 
-  function keys(obj) {
-    return Object.keys(obj).sort();
-  }
-
-  function padZero(thing, length = 2) {
-    let string = thing.toString();
-    while (string.length < length) {
-      string = `0${string}`;
-    }
-    return string;
-  }
-
-  function sum(sum, n) {
-    return sum + n;
-  }
-
-  function objectKeyValPairs(obj) {
-    return keys(obj).map((key) => [key, obj[key]]);
-  }
-
-  function sortByFirstElement([a], [b]) {
-    if (a < b) {
-      return -1;
-    }
-    if (b < a) {
-      return 1;
-    }
-    return 0;
-  }
+  const {
+    checkStatus,
+    dayDifference,
+    extractJson,
+    keys,
+    last,
+    objectKeyValPairs,
+    padZero,
+    range,
+    sortByFirstElement,
+    sum
+  } = require("./utilities.js");
 
   function dateOfFirstEntry(dateEntries) {
     const firstYear = keys(dateEntries)[0];
@@ -135,18 +118,6 @@
     };
   }
 
-  function rangeExclusive(start, end) {
-    // start-inclusive, end-noninclusive, pass integers not strings
-    // http://stackoverflow.com/a/19506234/303896
-    return Array
-      .apply(0, Array(end - start))
-      .map((element, index) => index + start);
-  }
-
-  function range(start, end) {
-    return rangeExclusive(start, end + 1);
-  }
-
   function calculateAverages(entryDictionary) {
     const years = keys(entryDictionary);
     let averages = {};
@@ -235,19 +206,6 @@
     charts.insertBefore(p, firstChart);
   }
 
-  function checkStatus(response) {
-    if (response.status >= 200 && response.status < 300) {
-      return response;
-    }
-    let error = new Error(response.statusText);
-    error.response = response;
-    throw error;
-  }
-
-  function extractJson(response) {
-    return response.json();
-  }
-
   function removeNodesInNodelist(nodelist) {
     let node;
     while (node = nodelist[nodelist.length - 1]) { // need to recalculate placeholdersNodelist.length on each iteration
@@ -270,22 +228,6 @@
       return -1;
     }
     return 1;
-  }
-
-  function last(array) {
-    // return the last element in the array
-    return array.slice(-1)[0];
-  }
-
-  const MSEC_IN_1_SEC = 1000;
-  const SEC_IN_1_MIN = 60;
-  const MIN_IN_1_HR = 60;
-  const HR_IN_1_DAY = 24;
-  function dayDifference(earlierDate, laterDate) {
-    // params are strings of yyyy-mm-dd
-    return ( new Date(laterDate.split("-")) - new Date(earlierDate.split("-")) )
-      / MSEC_IN_1_SEC / SEC_IN_1_MIN / MIN_IN_1_HR / HR_IN_1_DAY
-    ;
   }
 
   function ymdFromDate(date) {
@@ -396,4 +338,5 @@
     };
   })();
 })(this);
-this.showChart();
+
+this.showChart(); // TODO move this to onLoad in the html?
