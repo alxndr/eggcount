@@ -332,7 +332,6 @@
   }
 
   (function() {
-
     context.showChart = function() {
       if (!window.Plotly) {
         die();
@@ -395,28 +394,6 @@
         })
       ; // fetch pipeline
     };
-
-    function _dateOfLastEntry(dateEntries) {
-      const lastYear = keys(dateEntries).slice(-1)[0];
-      const lastMonth = keys(dateEntries[lastYear]).slice(-1)[0];
-      const lastDay = keys(dateEntries[lastYear][lastMonth]).slice(-1)[0];
-      const d = new Date(lastYear, lastMonth-1, lastDay);
-      d.setHours(1);
-      return d;
-    }
-
-    function _objectValues(obj) {
-      return keys(obj).map((key) => obj[key]);
-    }
-
-    function _randomIntLessThan(max) {
-      return Math.floor(max * Math.random());
-    }
-
-    function _flattener(a, b) {
-      return a.concat(b);
-    }
-
   })();
 })(this);
 this.showChart();
