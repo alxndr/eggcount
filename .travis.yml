@@ -9,3 +9,5 @@ matrix:
   fast_finish: true
   allow_failures:
     - node_js: 5
+
+script: npm run ci

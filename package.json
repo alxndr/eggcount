@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "build": "babel src -d build",
+    "ci": "npm run lint && npm run test",
     "lint": "eslint --config .eslintrc src",
     "test": "mocha --require mocha-babel test/**/*.js"
   },
