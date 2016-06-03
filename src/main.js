@@ -64,9 +64,7 @@ function runningAverageOverPriorDays(
 }
 
 const FAKE_YEAR = 1970;
-
 function makeFakeDate(month, day) {
-  // need to normalize all dates to same year, so chart lib places all e.g. Jul 13s in the same X-axis position
   return new Date(FAKE_YEAR, month-1, day);
 }
 
@@ -82,24 +80,26 @@ function buildSeparateDataSets(yearAcc, [year, yearData]) {
      }
    */
   const transformedYearData =
-  objectKeyValPairs(yearData)
-    .sort(sortByFirstElement)
-    .reduce((monthAcc, [month, monthData]) => {
-      const transformedMonthData =
-      objectKeyValPairs(monthData)
-        .sort(sortByFirstElement)
-        .reduce((dayAcc, [day, dayData]) => {
-          dayAcc.dateSeries.push(makeFakeDate(month, day)); // need to normalize all dates to same year, so chart lib places all e.g. Jul 13s in the same X-axis position
-          dayAcc.rawCount.push(dayData.count);
-          return dayAcc;
-        }, newEmptyDataThing())
-      ;
-      return {
-        dateSeries: monthAcc.dateSeries.concat(transformedMonthData.dateSeries),
-        rawCount: monthAcc.rawCount.concat(transformedMonthData.rawCount),
-      };
-    }, newEmptyDataThing())
-  ;
+    objectKeyValPairs(yearData)
+      .sort(sortByFirstElement)
+      .reduce((monthAcc, [month, monthData]) => {
+        const transformedMonthData =
+        objectKeyValPairs(monthData)
+          .sort(sortByFirstElement)
+          .reduce((dayAcc, [day, dayData]) => {
+            // need to normalize all dates to same year,
+            // so charting lib places all e.g. Jul 13s in the same X-axis position
+            dayAcc.dateSeries.push(makeFakeDate(month, day));
+            dayAcc.rawCount.push(dayData.count);
+            return dayAcc;
+          }, newEmptyDataThing())
+        ;
+        return {
+          dateSeries: monthAcc.dateSeries.concat(transformedMonthData.dateSeries),
+          rawCount: monthAcc.rawCount.concat(transformedMonthData.rawCount),
+        };
+      }, newEmptyDataThing())
+    ;
   yearAcc[year] = transformedYearData;
   return yearAcc;
 }
