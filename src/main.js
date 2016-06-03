@@ -1,5 +1,3 @@
-/* global Plotly */
-
 const GIST_ID = "c5cb1b4ceaf938d8801b60fd241fabf9";
 const GIST_FILENAME = "eggcount.json";
 
@@ -329,7 +327,7 @@ global.showChart = function() {
     })
     .then((configsForPlotly) => {
       removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
-      configsForPlotly.map(({domId, data, layout, config}) => Plotly.newPlot(domId, data, layout, config));
+      configsForPlotly.map(({domId, data, layout, config}) => global.Plotly.newPlot(domId, data, layout, config));
     })
   ; // fetch pipeline
 };
