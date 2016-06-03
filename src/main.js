@@ -1,4 +1,4 @@
-/* global console, document, Plotly */
+/* global Plotly */
 
 const GIST_ID = "c5cb1b4ceaf938d8801b60fd241fabf9";
 const GIST_FILENAME = "eggcount.json";
