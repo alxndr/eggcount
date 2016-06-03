@@ -5,8 +5,8 @@
   "main": "main.js",
   "scripts": {
     "build": "babel src -d build",
-    "lint": "eslint --config .eslintrc src && echo linting src/ ok",
-    "test": "echo No tests\\! && exit 1"
+    "lint": "eslint --config .eslintrc src",
+    "test": "npm run lint"
   },
   "repository": {
     "type": "git",
