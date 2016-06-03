@@ -1,6 +1,4 @@
-/* global module */
-
-function checkStatus(response) {
+export function checkStatus(response) {
   if (response.status >= 200 && response.status < 300) {
     return response;
   }
@@ -13,31 +11,31 @@ const MSEC_IN_1_SEC = 1000;
 const SEC_IN_1_MIN = 60;
 const MIN_IN_1_HR = 60;
 const HR_IN_1_DAY = 24;
-function dayDifference(earlierDate, laterDate) {
+export function dayDifference(earlierDate, laterDate) {
   // params are strings of yyyy-mm-dd
   return ( new Date(laterDate.split("-")) - new Date(earlierDate.split("-")) )
   / MSEC_IN_1_SEC / SEC_IN_1_MIN / MIN_IN_1_HR / HR_IN_1_DAY
   ;
 }
 
-function extractJson(response) {
+export function extractJson(response) {
   return response.json();
 }
 
-function keys(obj) {
+export function keys(obj) {
   return Object.keys(obj).sort();
 }
 
-function last(array) {
+export function last(array) {
   // return the last element in the array
   return array.slice(-1)[0];
 }
 
-function objectKeyValPairs(obj) {
+export function objectKeyValPairs(obj) {
   return keys(obj).map((key) => [key, obj[key]]);
 }
 
-function padZero(thing, length = 2) {
+export function padZero(thing, length = 2) {
   let string = thing.toString();
   while (string.length < length) {
     string = `0${string}`;
@@ -45,7 +43,7 @@ function padZero(thing, length = 2) {
   return string;
 }
 
-function sortByFirstElement([a], [b]) {
+export function sortByFirstElement([a], [b]) {
   if (a < b) {
     return -1;
   }
@@ -55,11 +53,11 @@ function sortByFirstElement([a], [b]) {
   return 0;
 }
 
-function sum(sum, n) {
+export function sum(sum, n) {
   return sum + n;
 }
 
-function range(start, end) {
+export function range(start, end) {
   return rangeExclusive(start, end + 1);
 }
 
@@ -70,16 +68,3 @@ function rangeExclusive(start, end) {
     .apply(0, Array(end - start))
     .map((element, index) => index + start);
 }
-
-module.exports = {
-  checkStatus,
-  dayDifference,
-  extractJson,
-  keys,
-  last,
-  objectKeyValPairs,
-  padZero,
-  range,
-  sortByFirstElement,
-  sum
-};
