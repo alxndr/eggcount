@@ -261,16 +261,15 @@ function constructDict(data) {
 function buildConfigsForPlotly({rawData, averages}) {
   const transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
   const years = keys(transformedData);
-  const bindExtractData = (data) => (year, metric, opts) => extractData(year, metric, data, opts);
-  const boundExtractData = bindExtractData(transformedData);
 
-  // TODO only years.map() once; map each year's data to the transformations it needs...
-
-  const dataForCollectedChart =
-    years.map((year) => boundExtractData(year, "rawCount", { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
-
-  const dataFor7dayChart =
-    years.map((year) => extractData(year, "avgDays7", averages, { mode: "line" }));
+  const {dataForCollectedChart, dataFor7dayChart, dataFor28dayChart, dataFor84dayChart} =
+    years.reduce((acc, year) => {
+      acc.dataForCollectedChart.push(extractData(year, "rawCount", transformedData, { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
+      acc.dataFor7dayChart.push(extractData(year, "avgDays7", averages, { mode: "line" }));
+      acc.dataFor28dayChart.push(extractData(year, "avgDays28", averages, { mode: "line" }));
+      acc.dataFor84dayChart.push(extractData(year, "avgDays84", averages, { mode: "line" }));
+      return acc;
+    }, {dataForCollectedChart:[], dataFor7dayChart:[], dataFor28dayChart:[], dataFor84dayChart:[]});
 
   return [
     {
@@ -287,13 +286,13 @@ function buildConfigsForPlotly({rawData, averages}) {
     },
     {
       domId: "1mo",
-      data: years.map((year) => extractData(year, "avgDays28", averages, { mode: "line" })),
+      data: dataFor28dayChart,
       layout: plotLayout({title: "1-month rolling average"}),
       config: {displayModeBar: false}
     },
     {
       domId: "3mo",
-      data: years.map((year) => extractData(year, "avgDays84", averages, { mode: "line" })),
+      data: dataFor84dayChart,
       layout: plotLayout({title: "3-month rolling average"}),
       config: {displayModeBar: false}
     }

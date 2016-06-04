@@ -286,22 +286,20 @@ function buildConfigsForPlotly(_ref10) {
 
   var transformedData = (0, _utilities.objectKeyValPairs)(rawData).reduce(buildSeparateDataSets, {});
   var years = (0, _utilities.keys)(transformedData);
-  var bindExtractData = function bindExtractData(data) {
-    return function (year, metric, opts) {
-      return extractData(year, metric, data, opts);
-    };
-  };
-  var boundExtractData = bindExtractData(transformedData);
 
-  // TODO only years.map() once; map each year's data to the transformations it needs...
+  var _years$reduce = years.reduce(function (acc, year) {
+    acc.dataForCollectedChart.push(extractData(year, "rawCount", transformedData, { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
+    acc.dataFor7dayChart.push(extractData(year, "avgDays7", averages, { mode: "line" }));
+    acc.dataFor28dayChart.push(extractData(year, "avgDays28", averages, { mode: "line" }));
+    acc.dataFor84dayChart.push(extractData(year, "avgDays84", averages, { mode: "line" }));
+    return acc;
+  }, { dataForCollectedChart: [], dataFor7dayChart: [], dataFor28dayChart: [], dataFor84dayChart: [] });
 
-  var dataForCollectedChart = years.map(function (year) {
-    return boundExtractData(year, "rawCount", { mode: "markers", opacity: 0.3, marker: { size: 15 } });
-  });
+  var dataForCollectedChart = _years$reduce.dataForCollectedChart;
+  var dataFor7dayChart = _years$reduce.dataFor7dayChart;
+  var dataFor28dayChart = _years$reduce.dataFor28dayChart;
+  var dataFor84dayChart = _years$reduce.dataFor84dayChart;
 
-  var dataFor7dayChart = years.map(function (year) {
-    return extractData(year, "avgDays7", averages, { mode: "line" });
-  });
 
   return [{
     domId: "raw",
@@ -315,16 +313,12 @@ function buildConfigsForPlotly(_ref10) {
     config: { displayModeBar: false }
   }, {
     domId: "1mo",
-    data: years.map(function (year) {
-      return extractData(year, "avgDays28", averages, { mode: "line" });
-    }),
+    data: dataFor28dayChart,
     layout: plotLayout({ title: "1-month rolling average" }),
     config: { displayModeBar: false }
   }, {
     domId: "3mo",
-    data: years.map(function (year) {
-      return extractData(year, "avgDays84", averages, { mode: "line" });
-    }),
+    data: dataFor84dayChart,
     layout: plotLayout({ title: "3-month rolling average" }),
     config: { displayModeBar: false }
   }];
