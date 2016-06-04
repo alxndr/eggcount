@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.createLink = createLink;
 exports.createP = createP;
+exports.findId = findId;
 exports.insertBefore = insertBefore;
 exports.removeNodesInNodelist = removeNodesInNodelist;
 function createElement(elementName) {
@@ -29,6 +30,10 @@ function createP(text) {
 
 function createText(text) {
   return global.createTextNode(text);
+}
+
+function findId(elementId) {
+  return global.getElementById(elementId);
 }
 
 function insertBefore(container, newElement) {

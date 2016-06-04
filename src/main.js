@@ -13,6 +13,14 @@ import {
   ymdFromDate
 } from "./utilities";
 
+function die() {
+  console.error("Uh oh! Expected Plotly to be globally available.");
+  html.insertFirst(
+    html.findId("charts"),
+    html.createP("Uh oh, can't find the graphing library! Try refreshing?")
+  );
+}
+
 function dateOfFirstEntry(dateEntries) {
   const firstYear = keys(dateEntries)[0];
   const firstMonth = keys(dateEntries[firstYear])[0];
@@ -129,14 +137,6 @@ function extractData(year, measure, data, opts) {
   return Object.assign(defaults, opts);
 }
 
-function die() {
-  console.error("Uh oh! Expected Plotly to be globally available.");
-  html.insertFirst(
-    document.getElementById("charts"),
-    html.createP("Uh oh, can't find the graphing library! Try refreshing?")
-  );
-}
-
 function sortInput(a, b) {
   const aDate = new Date(a.date.split("-"));
   const bDate = new Date(b.date.split("-"));
@@ -206,7 +206,7 @@ global.showChart = function({gistId, filename}) {
     .then(({files, html_url}) => {
       // TODO there should be a split here in the pipeline or something...
       // (there are two things to do with the result of fetching that gist)
-      document.getElementById("charts").appendChild(html.createLink({text: "data source", href: html_url}));
+      html.findId("charts").appendChild(html.createLink({text: "data source", href: html_url}));
       return fetch(files[filename].raw_url);
     })
     .then(checkStatus)
@@ -215,7 +215,7 @@ global.showChart = function({gistId, filename}) {
     .then(calculateAverages) // need to calculate averages only once all data is collected
     .then(buildConfigsForPlotly)
     .then(({dataForCollectedChart, dataFor7dayChart, dataFor28dayChart, dataFor84dayChart}) => {
-      html.removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
+      html.removeNodesInNodelist(html.findId("charts").getElementsByClassName("placeholder"));
       const plotlyConfig = {displayModeBar: false};
       newPlot("raw", dataForCollectedChart, plotly.layout({title: "eggs collected per day"}) , plotlyConfig);
       newPlot("1wk", dataFor7dayChart     , plotly.layout({title: "1-week rolling average"}) , plotlyConfig);

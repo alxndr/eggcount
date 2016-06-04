@@ -19,6 +19,10 @@ function createText(text) {
   return global.createTextNode(text);
 }
 
+export function findId(elementId) {
+  return global.getElementById(elementId);
+}
+
 export function insertBefore(container, newElement) {
   const firstChild = container.firstChild;
   container.insertBefore(newElement, firstChild);

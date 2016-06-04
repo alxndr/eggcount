@@ -18,6 +18,11 @@ var _utilities = require("./utilities");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function die() {
+  console.error("Uh oh! Expected Plotly to be globally available.");
+  _html2.default.insertFirst(_html2.default.findId("charts"), _html2.default.createP("Uh oh, can't find the graphing library! Try refreshing?"));
+}
+
 function dateOfFirstEntry(dateEntries) {
   var firstYear = (0, _utilities.keys)(dateEntries)[0];
   var firstMonth = (0, _utilities.keys)(dateEntries[firstYear])[0];
@@ -133,11 +138,6 @@ function extractData(year, measure, data, opts) {
   return Object.assign(defaults, opts);
 }
 
-function die() {
-  console.error("Uh oh! Expected Plotly to be globally available.");
-  _html2.default.insertFirst(document.getElementById("charts"), _html2.default.createP("Uh oh, can't find the graphing library! Try refreshing?"));
-}
-
 function sortInput(a, b) {
   var aDate = new Date(a.date.split("-"));
   var bDate = new Date(b.date.split("-"));
@@ -227,7 +227,7 @@ global.showChart = function (_ref5) {
 
     // TODO there should be a split here in the pipeline or something...
     // (there are two things to do with the result of fetching that gist)
-    document.getElementById("charts").appendChild(_html2.default.createLink({ text: "data source", href: html_url }));
+    _html2.default.findId("charts").appendChild(_html2.default.createLink({ text: "data source", href: html_url }));
     return fetch(files[filename].raw_url);
   }).then(_utilities.checkStatus).then(_utilities.extractJson).then(constructDict).then(calculateAverages) // need to calculate averages only once all data is collected
   .then(buildConfigsForPlotly).then(function (_ref7) {
@@ -236,7 +236,7 @@ global.showChart = function (_ref5) {
     var dataFor28dayChart = _ref7.dataFor28dayChart;
     var dataFor84dayChart = _ref7.dataFor84dayChart;
 
-    _html2.default.removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
+    _html2.default.removeNodesInNodelist(_html2.default.findId("charts").getElementsByClassName("placeholder"));
     var plotlyConfig = { displayModeBar: false };
     newPlot("raw", dataForCollectedChart, _plotly2.default.layout({ title: "eggs collected per day" }), plotlyConfig);
     newPlot("1wk", dataFor7dayChart, _plotly2.default.layout({ title: "1-week rolling average" }), plotlyConfig);
