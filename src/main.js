@@ -1,15 +1,10 @@
 import { fetchFileInGist } from "./gistApi"
-import plotly from "./plotly";
-import * as html from "./html";
-import {
-  last,
-  padZero,
-  range,
-  sortByFirstElement,
-  sum
-} from "./utilities";
-import * as objects from "./objects";
-import * as dates from "./dates";
+import plotly from "./helpers/plotly";
+import * as html from "./helpers/html";
+import * as arrays from "./helpers/arrays";
+import * as objects from "./helpers/objects";
+import * as strings from "./helpers/strings";
+import * as dates from "./helpers/dates";
 
 function die() {
   console.error("Uh oh! Expected Plotly to be globally available.");
@@ -51,8 +46,8 @@ function runningAverageOverPriorDays(
   let dataToAverage = [];
   while (dateInQuestion <= referenceDate) {
     const year = (dateInQuestion.getYear() + 1900).toString();
-    const month = padZero(dateInQuestion.getMonth() + 1);
-    const day = padZero(dateInQuestion.getDate());
+    const month = strings.padZero(dateInQuestion.getMonth() + 1);
+    const day = strings.padZero(dateInQuestion.getDate());
     if (dateEntries[year] && dateEntries[year][month]) {
       const dayData = dateEntries[year][month][day];
       if (dayData) {
@@ -65,7 +60,7 @@ function runningAverageOverPriorDays(
   if (dataToAverage.length === 0) {
     return null;
   }
-  return dataToAverage.reduce(sum) / numDays;
+  return dataToAverage.reduce(arrays.sum) / numDays;
 }
 
 const FAKE_YEAR = 1970;
@@ -91,7 +86,7 @@ function emptyCounts() {
 function buildDateAndCountObjects(monthAcc, [month, monthData]) {
   const {dateSeries, rawCount} =
     objects.objectKeyValPairs(monthData)
-      .sort(sortByFirstElement)
+      .sort(arrays.sortByFirstElement)
       .reduce(
         (dayAcc, [day, dayData]) => recordStuff(dayAcc, dayData.count, month, day),
         emptyCounts()
@@ -115,7 +110,7 @@ function buildSeparateDataSets(yearAcc, [year, yearData]) {
    */
   yearAcc[year] =
     objects.objectKeyValPairs(yearData)
-      .sort(sortByFirstElement)
+      .sort(arrays.sortByFirstElement)
       .reduce(buildDateAndCountObjects, emptyCounts());
   return yearAcc;
 }
@@ -127,7 +122,7 @@ function calculateAverages(entryDictionary) {
   // iterates through all days between first and last data points, and
   // calculates a bunch of numbers, and
   // mutates the `averages` object, filling it up with the numbers.
-  range(parseInt(years[0]), parseInt(years.slice(-1)[0])).map((yearInt) => {
+  arrays.range(parseInt(years[0]), parseInt(years.slice(-1)[0])).map((yearInt) => {
     const year = yearInt.toString();
     if (!entryDictionary[year]) {
       return;
@@ -137,18 +132,18 @@ function calculateAverages(entryDictionary) {
     averages[year].avgDays7 = [];
     averages[year].avgDays28 = [];
     averages[year].avgDays84 = [];
-    range(1, 12).map((monthInt) => {
-      const month = padZero(monthInt); // entry dictionary has zero-padded string as keys
+    arrays.range(1, 12).map((monthInt) => {
+      const month = strings.padZero(monthInt); // entry dictionary has zero-padded string as keys
       if (!entryDictionary[year][month]) {
         return;
       }
-      range(1, 31).map((dayInt) => {
+      arrays.range(1, 31).map((dayInt) => {
         const date = new Date(yearInt, monthInt - 1, dayInt);
         if (date.getDate() !== dayInt) {
           return; // we auto-generated an invalid date, e.g. feb 31st
         }
         // TODO return if we're past the last date or before the first date
-        const day = padZero(dayInt); // entry dictionary has zero-padded string as keys
+        const day = strings.padZero(dayInt); // entry dictionary has zero-padded string as keys
         if (!averages[year][month]) {
           averages[year][month] = {};
         }
@@ -197,7 +192,7 @@ function constructDict(data) {
       smoothed.push({date, count});
       return smoothed;
     }
-    const lastMeasurement = last(smoothed);
+    const lastMeasurement = arrays.last(smoothed);
     const difference = dates.dayDifference(lastMeasurement.date, date);
     if (difference <= 1) {
       smoothed.push({date, count});

@@ -1,4 +1,4 @@
-import {checkStatus, extractJson} from "./http";
+import {checkStatus, extractJson} from "./helpers/http";
 
 function fetchGist(gistId) {
   return fetch(`https://api.github.com/gists/${gistId}`)

@@ -5,7 +5,7 @@ import "mocha";
 
 import {
   checkStatus
-} from "../src/http";
+} from "../../src/helpers/http";
 
 describe("http", function() {
 

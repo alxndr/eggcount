@@ -3,14 +3,6 @@ export function last(array) {
   return array.slice(-1)[0];
 }
 
-export function padZero(thing, length = 2) {
-  let string = thing.toString();
-  while (string.length < length) {
-    string = `0${string}`;
-  }
-  return string;
-}
-
 export function sortByFirstElement([a], [b]) {
   if (a < b) {
     return -1;

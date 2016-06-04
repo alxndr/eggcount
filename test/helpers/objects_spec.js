@@ -3,7 +3,7 @@
 import { expect } from "chai";
 import "mocha";
 
-import * as objects from "../src/objects";
+import * as objects from "../../src/helpers/objects";
 
 describe("objects", function() {
 

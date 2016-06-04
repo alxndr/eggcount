@@ -6,7 +6,7 @@ import "mocha";
 import {
   dayDifference,
   ymdFromDate
-} from "../src/dates";
+} from "../../src/helpers/dates";
 
 describe("dates", function() {
 

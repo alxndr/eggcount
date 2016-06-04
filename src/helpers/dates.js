@@ -1,4 +1,4 @@
-import { padZero } from "./utilities";
+import { padZero } from "./strings";
 
 const MSEC_IN_1_SEC = 1000;
 const SEC_IN_1_MIN = 60;

@@ -2245,30 +2245,6 @@ if (hadRuntime) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.dayDifference = dayDifference;
-exports.ymdFromDate = ymdFromDate;
-
-var _utilities = require("./utilities");
-
-var MSEC_IN_1_SEC = 1000;
-var SEC_IN_1_MIN = 60;
-var MIN_IN_1_HR = 60;
-var HR_IN_1_DAY = 24;
-function dayDifference(earlierDate, laterDate) {
-  // params are strings of yyyy-mm-dd
-  return (new Date(laterDate.split("-")) - new Date(earlierDate.split("-"))) / MSEC_IN_1_SEC / SEC_IN_1_MIN / MIN_IN_1_HR / HR_IN_1_DAY;
-}
-
-function ymdFromDate(date) {
-  return [date.getYear() + 1900, (0, _utilities.padZero)(date.getMonth() + 1), (0, _utilities.padZero)(date.getDate())].join("-");
-}
-
-},{"./utilities":97}],91:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
 exports.fetchFileInGist = undefined;
 
 var _regenerator = require("babel-runtime/regenerator");
@@ -2316,7 +2292,7 @@ var fetchFileInGist = exports.fetchFileInGist = function () {
   };
 }();
 
-var _http = require("./http");
+var _http = require("./helpers/http");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2324,7 +2300,88 @@ function fetchGist(gistId) {
   return fetch("https://api.github.com/gists/" + gistId).then(_http.checkStatus).then(_http.extractJson);
 }
 
-},{"./http":93,"babel-runtime/helpers/asyncToGenerator":6,"babel-runtime/regenerator":8}],92:[function(require,module,exports){
+},{"./helpers/http":94,"babel-runtime/helpers/asyncToGenerator":6,"babel-runtime/regenerator":8}],91:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _slicedToArray2 = require("babel-runtime/helpers/slicedToArray");
+
+var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
+
+exports.last = last;
+exports.sortByFirstElement = sortByFirstElement;
+exports.sum = sum;
+exports.range = range;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function last(array) {
+  // return the last element in the array
+  return array.slice(-1)[0];
+}
+
+function sortByFirstElement(_ref, _ref2) {
+  var _ref4 = (0, _slicedToArray3.default)(_ref, 1);
+
+  var a = _ref4[0];
+
+  var _ref3 = (0, _slicedToArray3.default)(_ref2, 1);
+
+  var b = _ref3[0];
+
+  if (a < b) {
+    return -1;
+  }
+  if (a > b) {
+    return 1;
+  }
+  return 0;
+}
+
+function sum(sum, n) {
+  return sum + n;
+}
+
+function range(start, end) {
+  return rangeExclusive(start, end + 1);
+}
+
+function rangeExclusive(start, end) {
+  // start-inclusive, end-noninclusive, pass integers not strings
+  // http://stackoverflow.com/a/19506234/303896
+  return Array.apply(0, Array(end - start)).map(function (element, index) {
+    return index + start;
+  });
+}
+
+},{"babel-runtime/helpers/slicedToArray":7}],92:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.dayDifference = dayDifference;
+exports.ymdFromDate = ymdFromDate;
+
+var _strings = require("./strings");
+
+var MSEC_IN_1_SEC = 1000;
+var SEC_IN_1_MIN = 60;
+var MIN_IN_1_HR = 60;
+var HR_IN_1_DAY = 24;
+function dayDifference(earlierDate, laterDate) {
+  // params are strings of yyyy-mm-dd
+  return (new Date(laterDate.split("-")) - new Date(earlierDate.split("-"))) / MSEC_IN_1_SEC / SEC_IN_1_MIN / MIN_IN_1_HR / HR_IN_1_DAY;
+}
+
+function ymdFromDate(date) {
+  return [date.getYear() + 1900, (0, _strings.padZero)(date.getMonth() + 1), (0, _strings.padZero)(date.getDate())].join("-");
+}
+
+},{"./strings":97}],93:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2377,7 +2434,7 @@ function removeNodesInNodelist(nodelist) {
   // TODO use a for loop?
 }
 
-},{}],93:[function(require,module,exports){
+},{}],94:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2398,7 +2455,77 @@ function extractJson(response) {
   return response.json();
 }
 
-},{}],94:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _keys = require("babel-runtime/core-js/object/keys");
+
+var _keys2 = _interopRequireDefault(_keys);
+
+exports.keys = keys;
+exports.objectKeyValPairs = objectKeyValPairs;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function keys(obj) {
+  return (0, _keys2.default)(obj).sort();
+}
+
+function objectKeyValPairs(obj) {
+  return keys(obj).map(function (key) {
+    return [key, obj[key]];
+  });
+}
+
+},{"babel-runtime/core-js/object/keys":4}],96:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _assign = require("babel-runtime/core-js/object/assign");
+
+var _assign2 = _interopRequireDefault(_assign);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function layout(opts) {
+  return (0, _assign2.default)({
+    type: "date",
+    xaxis: {
+      tickformat: "%b %d"
+    },
+    yaxis: {}
+  }, opts);
+}
+
+exports.default = {
+  layout: layout
+};
+
+},{"babel-runtime/core-js/object/assign":3}],97:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.padZero = padZero;
+function padZero(thing) {
+  var length = arguments.length <= 1 || arguments[1] === undefined ? 2 : arguments[1];
+
+  var string = thing.toString();
+  while (string.length < length) {
+    string = "0" + string;
+  }
+  return string;
+}
+
+},{}],98:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -2412,21 +2539,27 @@ var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
 
 var _gistApi = require("./gistApi");
 
-var _plotly = require("./plotly");
+var _plotly = require("./helpers/plotly");
 
 var _plotly2 = _interopRequireDefault(_plotly);
 
-var _html = require("./html");
+var _html = require("./helpers/html");
 
 var html = _interopRequireWildcard(_html);
 
-var _utilities = require("./utilities");
+var _arrays = require("./helpers/arrays");
 
-var _objects = require("./objects");
+var arrays = _interopRequireWildcard(_arrays);
+
+var _objects = require("./helpers/objects");
 
 var objects = _interopRequireWildcard(_objects);
 
-var _dates = require("./dates");
+var _strings = require("./helpers/strings");
+
+var strings = _interopRequireWildcard(_strings);
+
+var _dates = require("./helpers/dates");
 
 var dates = _interopRequireWildcard(_dates);
 
@@ -2470,8 +2603,8 @@ function runningAverageOverPriorDays(_ref, numDays, dateEntries) {
   var dataToAverage = [];
   while (dateInQuestion <= referenceDate) {
     var year = (dateInQuestion.getYear() + 1900).toString();
-    var month = (0, _utilities.padZero)(dateInQuestion.getMonth() + 1);
-    var day = (0, _utilities.padZero)(dateInQuestion.getDate());
+    var month = strings.padZero(dateInQuestion.getMonth() + 1);
+    var day = strings.padZero(dateInQuestion.getDate());
     if (dateEntries[year] && dateEntries[year][month]) {
       var dayData = dateEntries[year][month][day];
       if (dayData) {
@@ -2484,7 +2617,7 @@ function runningAverageOverPriorDays(_ref, numDays, dateEntries) {
   if (dataToAverage.length === 0) {
     return null;
   }
-  return dataToAverage.reduce(_utilities.sum) / numDays;
+  return dataToAverage.reduce(arrays.sum) / numDays;
 }
 
 var FAKE_YEAR = 1970;
@@ -2513,7 +2646,7 @@ function buildDateAndCountObjects(monthAcc, _ref2) {
   var month = _ref3[0];
   var monthData = _ref3[1];
 
-  var _objects$objectKeyVal = objects.objectKeyValPairs(monthData).sort(_utilities.sortByFirstElement).reduce(function (dayAcc, _ref4) {
+  var _objects$objectKeyVal = objects.objectKeyValPairs(monthData).sort(arrays.sortByFirstElement).reduce(function (dayAcc, _ref4) {
     var _ref5 = (0, _slicedToArray3.default)(_ref4, 2);
 
     var day = _ref5[0];
@@ -2546,7 +2679,7 @@ function buildSeparateDataSets(yearAcc, _ref6) {
        ...
      }
    */
-  yearAcc[year] = objects.objectKeyValPairs(yearData).sort(_utilities.sortByFirstElement).reduce(buildDateAndCountObjects, emptyCounts());
+  yearAcc[year] = objects.objectKeyValPairs(yearData).sort(arrays.sortByFirstElement).reduce(buildDateAndCountObjects, emptyCounts());
   return yearAcc;
 }
 
@@ -2557,7 +2690,7 @@ function calculateAverages(entryDictionary) {
   // iterates through all days between first and last data points, and
   // calculates a bunch of numbers, and
   // mutates the `averages` object, filling it up with the numbers.
-  (0, _utilities.range)(parseInt(years[0]), parseInt(years.slice(-1)[0])).map(function (yearInt) {
+  arrays.range(parseInt(years[0]), parseInt(years.slice(-1)[0])).map(function (yearInt) {
     var year = yearInt.toString();
     if (!entryDictionary[year]) {
       return;
@@ -2567,18 +2700,18 @@ function calculateAverages(entryDictionary) {
     averages[year].avgDays7 = [];
     averages[year].avgDays28 = [];
     averages[year].avgDays84 = [];
-    (0, _utilities.range)(1, 12).map(function (monthInt) {
-      var month = (0, _utilities.padZero)(monthInt); // entry dictionary has zero-padded string as keys
+    arrays.range(1, 12).map(function (monthInt) {
+      var month = strings.padZero(monthInt); // entry dictionary has zero-padded string as keys
       if (!entryDictionary[year][month]) {
         return;
       }
-      (0, _utilities.range)(1, 31).map(function (dayInt) {
+      arrays.range(1, 31).map(function (dayInt) {
         var date = new Date(yearInt, monthInt - 1, dayInt);
         if (date.getDate() !== dayInt) {
           return; // we auto-generated an invalid date, e.g. feb 31st
         }
         // TODO return if we're past the last date or before the first date
-        var day = (0, _utilities.padZero)(dayInt); // entry dictionary has zero-padded string as keys
+        var day = strings.padZero(dayInt); // entry dictionary has zero-padded string as keys
         if (!averages[year][month]) {
           averages[year][month] = {};
         }
@@ -2631,7 +2764,7 @@ function constructDict(data) {
       smoothed.push({ date: date, count: count });
       return smoothed;
     }
-    var lastMeasurement = (0, _utilities.last)(smoothed);
+    var lastMeasurement = arrays.last(smoothed);
     var difference = dates.dayDifference(lastMeasurement.date, date);
     if (difference <= 1) {
       smoothed.push({ date: date, count: count });
@@ -2719,125 +2852,4 @@ global.showChart = function (_ref11) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./dates":90,"./gistApi":91,"./html":92,"./objects":95,"./plotly":96,"./utilities":97,"babel-runtime/core-js/object/assign":3,"babel-runtime/helpers/slicedToArray":7}],95:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _keys = require("babel-runtime/core-js/object/keys");
-
-var _keys2 = _interopRequireDefault(_keys);
-
-exports.keys = keys;
-exports.objectKeyValPairs = objectKeyValPairs;
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function keys(obj) {
-  return (0, _keys2.default)(obj).sort();
-}
-
-function objectKeyValPairs(obj) {
-  return keys(obj).map(function (key) {
-    return [key, obj[key]];
-  });
-}
-
-},{"babel-runtime/core-js/object/keys":4}],96:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _assign = require("babel-runtime/core-js/object/assign");
-
-var _assign2 = _interopRequireDefault(_assign);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function layout(opts) {
-  return (0, _assign2.default)({
-    type: "date",
-    xaxis: {
-      tickformat: "%b %d"
-    },
-    yaxis: {}
-  }, opts);
-}
-
-exports.default = {
-  layout: layout
-};
-
-},{"babel-runtime/core-js/object/assign":3}],97:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _slicedToArray2 = require("babel-runtime/helpers/slicedToArray");
-
-var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
-
-exports.last = last;
-exports.padZero = padZero;
-exports.sortByFirstElement = sortByFirstElement;
-exports.sum = sum;
-exports.range = range;
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function last(array) {
-  // return the last element in the array
-  return array.slice(-1)[0];
-}
-
-function padZero(thing) {
-  var length = arguments.length <= 1 || arguments[1] === undefined ? 2 : arguments[1];
-
-  var string = thing.toString();
-  while (string.length < length) {
-    string = "0" + string;
-  }
-  return string;
-}
-
-function sortByFirstElement(_ref, _ref2) {
-  var _ref4 = (0, _slicedToArray3.default)(_ref, 1);
-
-  var a = _ref4[0];
-
-  var _ref3 = (0, _slicedToArray3.default)(_ref2, 1);
-
-  var b = _ref3[0];
-
-  if (a < b) {
-    return -1;
-  }
-  if (a > b) {
-    return 1;
-  }
-  return 0;
-}
-
-function sum(sum, n) {
-  return sum + n;
-}
-
-function range(start, end) {
-  return rangeExclusive(start, end + 1);
-}
-
-function rangeExclusive(start, end) {
-  // start-inclusive, end-noninclusive, pass integers not strings
-  // http://stackoverflow.com/a/19506234/303896
-  return Array.apply(0, Array(end - start)).map(function (element, index) {
-    return index + start;
-  });
-}
-
-},{"babel-runtime/helpers/slicedToArray":7}]},{},[90,91,92,93,94,95,96,97]);
+},{"./gistApi":90,"./helpers/arrays":91,"./helpers/dates":92,"./helpers/html":93,"./helpers/objects":95,"./helpers/plotly":96,"./helpers/strings":97,"babel-runtime/core-js/object/assign":3,"babel-runtime/helpers/slicedToArray":7}]},{},[90,98]);
