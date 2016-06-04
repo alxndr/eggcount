@@ -286,42 +286,13 @@ function buildConfigsForPlotly(_ref10) {
 
   var transformedData = (0, _utilities.objectKeyValPairs)(rawData).reduce(buildSeparateDataSets, {});
   var years = (0, _utilities.keys)(transformedData);
-
-  var _years$reduce = years.reduce(function (acc, year) {
+  return years.reduce(function (acc, year) {
     acc.dataForCollectedChart.push(extractData(year, "rawCount", transformedData, { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
     acc.dataFor7dayChart.push(extractData(year, "avgDays7", averages, { mode: "line" }));
     acc.dataFor28dayChart.push(extractData(year, "avgDays28", averages, { mode: "line" }));
     acc.dataFor84dayChart.push(extractData(year, "avgDays84", averages, { mode: "line" }));
     return acc;
   }, { dataForCollectedChart: [], dataFor7dayChart: [], dataFor28dayChart: [], dataFor84dayChart: [] });
-
-  var dataForCollectedChart = _years$reduce.dataForCollectedChart;
-  var dataFor7dayChart = _years$reduce.dataFor7dayChart;
-  var dataFor28dayChart = _years$reduce.dataFor28dayChart;
-  var dataFor84dayChart = _years$reduce.dataFor84dayChart;
-
-
-  return [{
-    domId: "raw",
-    data: dataForCollectedChart,
-    layout: plotLayout({ title: "eggs collected per day" }),
-    config: { displayModeBar: false }
-  }, {
-    domId: "1wk",
-    data: dataFor7dayChart,
-    layout: plotLayout({ title: "1-week rolling average" }),
-    config: { displayModeBar: false }
-  }, {
-    domId: "1mo",
-    data: dataFor28dayChart,
-    layout: plotLayout({ title: "1-month rolling average" }),
-    config: { displayModeBar: false }
-  }, {
-    domId: "3mo",
-    data: dataFor84dayChart,
-    layout: plotLayout({ title: "3-month rolling average" }),
-    config: { displayModeBar: false }
-  }];
 }
 
 global.showChart = function (_ref11) {
@@ -340,8 +311,33 @@ global.showChart = function (_ref11) {
     return fetch(files[filename].raw_url);
   }).then(_utilities.checkStatus).then(_utilities.extractJson).then(constructDict).then(calculateAverages) // need to calculate averages only once all data is collected
   .then(buildConfigsForPlotly).then(function (configsForPlotly) {
+    var dataForCollectedChart = configsForPlotly.dataForCollectedChart;
+    var dataFor7dayChart = configsForPlotly.dataFor7dayChart;
+    var dataFor28dayChart = configsForPlotly.dataFor28dayChart;
+    var dataFor84dayChart = configsForPlotly.dataFor84dayChart;
+
     removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
-    configsForPlotly.map(function (_ref13) {
+    [{
+      domId: "raw",
+      data: dataForCollectedChart,
+      layout: plotLayout({ title: "eggs collected per day" }),
+      config: { displayModeBar: false }
+    }, {
+      domId: "1wk",
+      data: dataFor7dayChart,
+      layout: plotLayout({ title: "1-week rolling average" }),
+      config: { displayModeBar: false }
+    }, {
+      domId: "1mo",
+      data: dataFor28dayChart,
+      layout: plotLayout({ title: "1-month rolling average" }),
+      config: { displayModeBar: false }
+    }, {
+      domId: "3mo",
+      data: dataFor84dayChart,
+      layout: plotLayout({ title: "3-month rolling average" }),
+      config: { displayModeBar: false }
+    }].map(function (_ref13) {
       var domId = _ref13.domId;
       var data = _ref13.data;
       var layout = _ref13.layout;

@@ -261,42 +261,13 @@ function constructDict(data) {
 function buildConfigsForPlotly({rawData, averages}) {
   const transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
   const years = keys(transformedData);
-
-  const {dataForCollectedChart, dataFor7dayChart, dataFor28dayChart, dataFor84dayChart} =
-    years.reduce((acc, year) => {
+  return years.reduce((acc, year) => {
       acc.dataForCollectedChart.push(extractData(year, "rawCount", transformedData, { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
       acc.dataFor7dayChart.push(extractData(year, "avgDays7", averages, { mode: "line" }));
       acc.dataFor28dayChart.push(extractData(year, "avgDays28", averages, { mode: "line" }));
       acc.dataFor84dayChart.push(extractData(year, "avgDays84", averages, { mode: "line" }));
       return acc;
     }, {dataForCollectedChart:[], dataFor7dayChart:[], dataFor28dayChart:[], dataFor84dayChart:[]});
-
-  return [
-    {
-      domId: "raw",
-      data: dataForCollectedChart,
-      layout: plotLayout({title: "eggs collected per day"}),
-      config: {displayModeBar: false}
-    },
-    {
-      domId: "1wk",
-      data: dataFor7dayChart,
-      layout: plotLayout({title: "1-week rolling average"}),
-      config: {displayModeBar: false}
-    },
-    {
-      domId: "1mo",
-      data: dataFor28dayChart,
-      layout: plotLayout({title: "1-month rolling average"}),
-      config: {displayModeBar: false}
-    },
-    {
-      domId: "3mo",
-      data: dataFor84dayChart,
-      layout: plotLayout({title: "3-month rolling average"}),
-      config: {displayModeBar: false}
-    }
-  ];
 }
 
 global.showChart = function({gistId, filename}) {
@@ -315,8 +286,34 @@ global.showChart = function({gistId, filename}) {
     .then(calculateAverages) // need to calculate averages only once all data is collected
     .then(buildConfigsForPlotly)
     .then((configsForPlotly) => {
+      const {dataForCollectedChart, dataFor7dayChart, dataFor28dayChart, dataFor84dayChart} = configsForPlotly;
       removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
-      configsForPlotly.map(({domId, data, layout, config}) => global.Plotly.newPlot(domId, data, layout, config));
+      [
+        {
+          domId: "raw",
+          data: dataForCollectedChart,
+          layout: plotLayout({title: "eggs collected per day"}),
+          config: {displayModeBar: false}
+        },
+        {
+          domId: "1wk",
+          data: dataFor7dayChart,
+          layout: plotLayout({title: "1-week rolling average"}),
+          config: {displayModeBar: false}
+        },
+        {
+          domId: "1mo",
+          data: dataFor28dayChart,
+          layout: plotLayout({title: "1-month rolling average"}),
+          config: {displayModeBar: false}
+        },
+        {
+          domId: "3mo",
+          data: dataFor84dayChart,
+          layout: plotLayout({title: "3-month rolling average"}),
+          config: {displayModeBar: false}
+        }
+      ].map(({domId, data, layout, config}) => global.Plotly.newPlot(domId, data, layout, config));
     })
   ; // fetch pipeline
 };
