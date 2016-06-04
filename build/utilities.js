@@ -16,6 +16,7 @@ exports.padZero = padZero;
 exports.sortByFirstElement = sortByFirstElement;
 exports.sum = sum;
 exports.range = range;
+exports.ymdFromDate = ymdFromDate;
 function checkStatus(response) {
   if (response.status >= 200 && response.status < 300) {
     return response;
@@ -95,4 +96,8 @@ function rangeExclusive(start, end) {
   return Array.apply(0, Array(end - start)).map(function (element, index) {
     return index + start;
   });
+}
+
+function ymdFromDate(date) {
+  return [date.getYear() + 1900, date.getMonth() + 1, date.getDate()].join("-");
 }

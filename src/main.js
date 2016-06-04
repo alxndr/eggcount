@@ -9,7 +9,8 @@ import {
   padZero,
   range,
   sortByFirstElement,
-  sum
+  sum,
+  ymdFromDate
 } from "./utilities";
 
 function dateOfFirstEntry(dateEntries) {
@@ -174,12 +175,6 @@ function extractData(year, measure, data, opts) {
   return Object.assign(defaults, opts);
 }
 
-function bindExtractData(data) {
-  return function(year, metric, opts) {
-    return extractData(year, metric, data, opts);
-  };
-}
-
 function plotLayout(opts) {
   return Object.assign({
     type: "date",
@@ -224,14 +219,6 @@ function sortInput(a, b) {
   return 1;
 }
 
-function ymdFromDate(date) {
-  return [
-    date.getYear() + 1900,
-    date.getMonth() + 1,
-    date.getDate()
-  ].join("-");
-}
-
 function constructDict(data) {
   const infilledData = data.sort(sortInput).reduce(function(smoothed, {date, count}) {
     if (!smoothed.length) { // the first measurement. no need to process any further.
@@ -267,6 +254,48 @@ function constructDict(data) {
   }, {});
 }
 
+function buildConfigsForPlotly({rawData, averages}) {
+  const transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
+  const years = keys(transformedData);
+  const bindExtractData = (data) => (year, metric, opts) => extractData(year, metric, data, opts);
+  const boundExtractData = bindExtractData(transformedData);
+
+  // TODO only years.map() once; map each year's data to the transformations it needs...
+
+  const dataForCollectedChart =
+    years.map((year) => boundExtractData(year, "rawCount", { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
+
+  const dataFor7dayChart =
+    years.map((year) => extractData(year, "avgDays7", averages, { mode: "line" }));
+
+  return [
+    {
+      domId: "raw",
+      data: dataForCollectedChart,
+      layout: plotLayout({title: "eggs collected per day"}),
+      config: {displayModeBar: false}
+    },
+    {
+      domId: "1wk",
+      data: dataFor7dayChart,
+      layout: plotLayout({title: "1-week rolling average"}),
+      config: {displayModeBar: false}
+    },
+    {
+      domId: "1mo",
+      data: years.map((year) => extractData(year, "avgDays28", averages, { mode: "line" })),
+      layout: plotLayout({title: "1-month rolling average"}),
+      config: {displayModeBar: false}
+    },
+    {
+      domId: "3mo",
+      data: years.map((year) => extractData(year, "avgDays84", averages, { mode: "line" })),
+      layout: plotLayout({title: "3-month rolling average"}),
+      config: {displayModeBar: false}
+    }
+  ];
+}
+
 global.showChart = function({gistId, filename}) {
   if (!global.Plotly) {
     die();
@@ -281,46 +310,7 @@ global.showChart = function({gistId, filename}) {
     .then(extractJson)
     .then(constructDict)
     .then((data) => calculateAverages(data)) // need to calculate averages only once all data is collected
-    .then(({rawData, averages}) => {
-      const transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
-      const years = keys(transformedData);
-      const boundExtractData = bindExtractData(transformedData);
-
-      // TODO only years.map() once; map each year's data to the transformations it needs...
-
-      const dataForCollectedChart =
-      years.map((year) => boundExtractData(year, "rawCount", { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
-
-      const dataFor7dayChart =
-      years.map((year) => extractData(year, "avgDays7", averages, { mode: "line" }));
-
-      return [
-        {
-          domId: "raw",
-          data: dataForCollectedChart,
-          layout: plotLayout({title: "eggs collected per day"}),
-          config: {displayModeBar: false}
-        },
-        {
-          domId: "1wk",
-          data: dataFor7dayChart,
-          layout: plotLayout({title: "1-week rolling average"}),
-          config: {displayModeBar: false}
-        },
-        {
-          domId: "1mo",
-          data: years.map((year) => extractData(year, "avgDays28", averages, { mode: "line" })),
-          layout: plotLayout({title: "1-month rolling average"}),
-          config: {displayModeBar: false}
-        },
-        {
-          domId: "3mo",
-          data: years.map((year) => extractData(year, "avgDays84", averages, { mode: "line" })),
-          layout: plotLayout({title: "3-month rolling average"}),
-          config: {displayModeBar: false}
-        }
-      ];
-    })
+    .then(buildConfigsForPlotly)
     .then((configsForPlotly) => {
       removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
       configsForPlotly.map(({domId, data, layout, config}) => global.Plotly.newPlot(domId, data, layout, config));

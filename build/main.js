@@ -178,12 +178,6 @@ function extractData(year, measure, data, opts) {
   return Object.assign(defaults, opts);
 }
 
-function bindExtractData(data) {
-  return function (year, metric, opts) {
-    return extractData(year, metric, data, opts);
-  };
-}
-
 function plotLayout(opts) {
   return Object.assign({
     type: "date",
@@ -228,10 +222,6 @@ function sortInput(a, b) {
   return 1;
 }
 
-function ymdFromDate(date) {
-  return [date.getYear() + 1900, date.getMonth() + 1, date.getDate()].join("-");
-}
-
 function constructDict(data) {
   var infilledData = data.sort(sortInput).reduce(function (smoothed, _ref8) {
     var date = _ref8.date;
@@ -252,7 +242,7 @@ function constructDict(data) {
       for (var i = 1; i < difference; i++) {
         var missingDate = new Date(lastMeasurementDate);
         missingDate.setDate(lastMeasurementDate.getDate() + i);
-        smoothed.push({ date: ymdFromDate(missingDate), count: dailyAverage });
+        smoothed.push({ date: (0, _utilities.ymdFromDate)(missingDate), count: dailyAverage });
       }
       smoothed.push({ date: date, count: dailyAverage });
     }
@@ -281,67 +271,74 @@ function constructDict(data) {
   }, {});
 }
 
-global.showChart = function (_ref10) {
-  var gistId = _ref10.gistId;
-  var filename = _ref10.filename;
+function buildConfigsForPlotly(_ref10) {
+  var rawData = _ref10.rawData;
+  var averages = _ref10.averages;
+
+  var transformedData = (0, _utilities.objectKeyValPairs)(rawData).reduce(buildSeparateDataSets, {});
+  var years = (0, _utilities.keys)(transformedData);
+  var bindExtractData = function bindExtractData(data) {
+    return function (year, metric, opts) {
+      return extractData(year, metric, data, opts);
+    };
+  };
+  var boundExtractData = bindExtractData(transformedData);
+
+  // TODO only years.map() once; map each year's data to the transformations it needs...
+
+  var dataForCollectedChart = years.map(function (year) {
+    return boundExtractData(year, "rawCount", { mode: "markers", opacity: 0.3, marker: { size: 15 } });
+  });
+
+  var dataFor7dayChart = years.map(function (year) {
+    return extractData(year, "avgDays7", averages, { mode: "line" });
+  });
+
+  return [{
+    domId: "raw",
+    data: dataForCollectedChart,
+    layout: plotLayout({ title: "eggs collected per day" }),
+    config: { displayModeBar: false }
+  }, {
+    domId: "1wk",
+    data: dataFor7dayChart,
+    layout: plotLayout({ title: "1-week rolling average" }),
+    config: { displayModeBar: false }
+  }, {
+    domId: "1mo",
+    data: years.map(function (year) {
+      return extractData(year, "avgDays28", averages, { mode: "line" });
+    }),
+    layout: plotLayout({ title: "1-month rolling average" }),
+    config: { displayModeBar: false }
+  }, {
+    domId: "3mo",
+    data: years.map(function (year) {
+      return extractData(year, "avgDays84", averages, { mode: "line" });
+    }),
+    layout: plotLayout({ title: "3-month rolling average" }),
+    config: { displayModeBar: false }
+  }];
+}
+
+global.showChart = function (_ref11) {
+  var gistId = _ref11.gistId;
+  var filename = _ref11.filename;
 
   if (!global.Plotly) {
     die();
     return false;
   }
-  return (0, _gistApi2.default)(gistId).then(function (_ref11) {
-    var files = _ref11.files;
-    var html_url = _ref11.html_url;
+  return (0, _gistApi2.default)(gistId).then(function (_ref12) {
+    var files = _ref12.files;
+    var html_url = _ref12.html_url;
 
     appendLink(html_url);
     return fetch(files[filename].raw_url);
   }).then(_utilities.checkStatus).then(_utilities.extractJson).then(constructDict).then(function (data) {
     return calculateAverages(data);
   }) // need to calculate averages only once all data is collected
-  .then(function (_ref12) {
-    var rawData = _ref12.rawData;
-    var averages = _ref12.averages;
-
-    var transformedData = (0, _utilities.objectKeyValPairs)(rawData).reduce(buildSeparateDataSets, {});
-    var years = (0, _utilities.keys)(transformedData);
-    var boundExtractData = bindExtractData(transformedData);
-
-    // TODO only years.map() once; map each year's data to the transformations it needs...
-
-    var dataForCollectedChart = years.map(function (year) {
-      return boundExtractData(year, "rawCount", { mode: "markers", opacity: 0.3, marker: { size: 15 } });
-    });
-
-    var dataFor7dayChart = years.map(function (year) {
-      return extractData(year, "avgDays7", averages, { mode: "line" });
-    });
-
-    return [{
-      domId: "raw",
-      data: dataForCollectedChart,
-      layout: plotLayout({ title: "eggs collected per day" }),
-      config: { displayModeBar: false }
-    }, {
-      domId: "1wk",
-      data: dataFor7dayChart,
-      layout: plotLayout({ title: "1-week rolling average" }),
-      config: { displayModeBar: false }
-    }, {
-      domId: "1mo",
-      data: years.map(function (year) {
-        return extractData(year, "avgDays28", averages, { mode: "line" });
-      }),
-      layout: plotLayout({ title: "1-month rolling average" }),
-      config: { displayModeBar: false }
-    }, {
-      domId: "3mo",
-      data: years.map(function (year) {
-        return extractData(year, "avgDays84", averages, { mode: "line" });
-      }),
-      layout: plotLayout({ title: "3-month rolling average" }),
-      config: { displayModeBar: false }
-    }];
-  }).then(function (configsForPlotly) {
+  .then(buildConfigsForPlotly).then(function (configsForPlotly) {
     removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
     configsForPlotly.map(function (_ref13) {
       var domId = _ref13.domId;

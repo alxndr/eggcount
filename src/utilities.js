@@ -68,3 +68,11 @@ function rangeExclusive(start, end) {
     .apply(0, Array(end - start))
     .map((element, index) => index + start);
 }
+
+export function ymdFromDate(date) {
+  return [
+    date.getYear() + 1900,
+    date.getMonth() + 1,
+    date.getDate()
+  ].join("-");
+}
