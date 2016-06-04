@@ -1,19 +1,10 @@
-import { fetchGist } from "./gistApi"
-import plotly from "./plotly";
-import * as html from "./html";
-import {
-  checkStatus,
-  dayDifference,
-  extractJson,
-  keys,
-  last,
-  objectKeyValPairs,
-  padZero,
-  range,
-  sortByFirstElement,
-  sum,
-  ymdFromDate
-} from "./utilities";
+import { fetchFileInGist } from "./gistApi"
+import plotly from "./helpers/plotly";
+import * as html from "./helpers/html";
+import * as arrays from "./helpers/arrays";
+import * as objects from "./helpers/objects";
+import * as strings from "./helpers/strings";
+import * as dates from "./helpers/dates";
 
 function die() {
   console.error("Uh oh! Expected Plotly to be globally available.");
@@ -24,9 +15,9 @@ function die() {
 }
 
 function dateOfFirstEntry(dateEntries) {
-  const firstYear = keys(dateEntries)[0];
-  const firstMonth = keys(dateEntries[firstYear])[0];
-  const firstDay = keys(dateEntries[firstYear][firstMonth])[0];
+  const firstYear = objects.keys(dateEntries)[0];
+  const firstMonth = objects.keys(dateEntries[firstYear])[0];
+  const firstDay = objects.keys(dateEntries[firstYear][firstMonth])[0];
   const d = new Date(firstYear, firstMonth-1, firstDay);
   d.setHours(1); // so other calculations of this date will be before...
   return d;
@@ -55,8 +46,8 @@ function runningAverageOverPriorDays(
   let dataToAverage = [];
   while (dateInQuestion <= referenceDate) {
     const year = (dateInQuestion.getYear() + 1900).toString();
-    const month = padZero(dateInQuestion.getMonth() + 1);
-    const day = padZero(dateInQuestion.getDate());
+    const month = strings.padZero(dateInQuestion.getMonth() + 1);
+    const day = strings.padZero(dateInQuestion.getDate());
     if (dateEntries[year] && dateEntries[year][month]) {
       const dayData = dateEntries[year][month][day];
       if (dayData) {
@@ -69,18 +60,36 @@ function runningAverageOverPriorDays(
   if (dataToAverage.length === 0) {
     return null;
   }
-  return dataToAverage.reduce(sum) / numDays;
-}
-
-const FAKE_YEAR = 1970;
-function makeFakeDate(month, day) {
-  return new Date(FAKE_YEAR, month-1, day);
+  return dataToAverage.reduce((sum, n) => sum + n) / numDays;
 }
 
 function recordStuff(data, count, month, day) {
-  data.dateSeries.push(makeFakeDate(month, day));
+  // need to normalize all dates to same year,
+  // so charting lib places all e.g. Jul 13s in the same X-axis position
+  data.dateSeries.push(dates.makeFakeDate(month, day));
   data.rawCount.push(count);
   return data;
+}
+
+function emptyCounts() {
+  return {
+    dateSeries: [],
+    rawCount: []
+  };
+}
+
+function buildDateAndCountObjects(monthAcc, [month, monthData]) {
+  const {dateSeries, rawCount} =
+    objects.objectKeyValPairs(monthData)
+      .sort(arrays.sortByFirstElement)
+      .reduce(
+        (dayAcc, [day, dayData]) => recordStuff(dayAcc, dayData.count, month, day),
+        emptyCounts()
+      );
+  return {
+    dateSeries: monthAcc.dateSeries.concat(dateSeries),
+    rawCount: monthAcc.rawCount.concat(rawCount)
+  };
 }
 
 function buildSeparateDataSets(yearAcc, [year, yearData]) {
@@ -95,45 +104,20 @@ function buildSeparateDataSets(yearAcc, [year, yearData]) {
      }
    */
   yearAcc[year] =
-    objectKeyValPairs(yearData)
-      .sort(sortByFirstElement)
-      .reduce((monthAcc, [month, monthData]) => {
-        const {dateSeries, rawCount} =
-          objectKeyValPairs(monthData)
-            .sort(sortByFirstElement)
-            .reduce((dayAcc, [day, dayData]) => {
-              // need to normalize all dates to same year,
-              // so charting lib places all e.g. Jul 13s in the same X-axis position
-              return recordStuff(dayAcc, dayData.count, month, day);
-            }, newEmptyDataThing())
-          ;
-        return {
-          dateSeries: monthAcc.dateSeries.concat(dateSeries),
-          rawCount: monthAcc.rawCount.concat(rawCount)
-        };
-      }, newEmptyDataThing())
-    ;
+    objects.objectKeyValPairs(yearData)
+      .sort(arrays.sortByFirstElement)
+      .reduce(buildDateAndCountObjects, emptyCounts());
   return yearAcc;
 }
 
-function newEmptyDataThing() {
-  return {
-    dateSeries: [],
-    rawCount: [],
-    avgDays7: [],
-    avgDays28: [],
-    avgDays84: []
-  };
-}
-
 function calculateAverages(entryDictionary) {
-  const years = keys(entryDictionary);
+  const years = objects.keys(entryDictionary);
   let averages = {};
 
   // iterates through all days between first and last data points, and
   // calculates a bunch of numbers, and
   // mutates the `averages` object, filling it up with the numbers.
-  range(parseInt(years[0]), parseInt(years.slice(-1)[0])).map((yearInt) => {
+  arrays.range(parseInt(years[0]), parseInt(years.slice(-1)[0])).map((yearInt) => {
     const year = yearInt.toString();
     if (!entryDictionary[year]) {
       return;
@@ -143,18 +127,18 @@ function calculateAverages(entryDictionary) {
     averages[year].avgDays7 = [];
     averages[year].avgDays28 = [];
     averages[year].avgDays84 = [];
-    range(1, 12).map((monthInt) => {
-      const month = padZero(monthInt); // entry dictionary has zero-padded string as keys
+    arrays.range(1, 12).map((monthInt) => {
+      const month = strings.padZero(monthInt); // entry dictionary has zero-padded string as keys
       if (!entryDictionary[year][month]) {
         return;
       }
-      range(1, 31).map((dayInt) => {
+      arrays.range(1, 31).map((dayInt) => {
         const date = new Date(yearInt, monthInt - 1, dayInt);
         if (date.getDate() !== dayInt) {
           return; // we auto-generated an invalid date, e.g. feb 31st
         }
         // TODO return if we're past the last date or before the first date
-        const day = padZero(dayInt); // entry dictionary has zero-padded string as keys
+        const day = strings.padZero(dayInt); // entry dictionary has zero-padded string as keys
         if (!averages[year][month]) {
           averages[year][month] = {};
         }
@@ -162,7 +146,7 @@ function calculateAverages(entryDictionary) {
         if (days7 !== null) {
           const days28 = runningAverageOverPriorDays({year, month, day}, 28, entryDictionary);
           const days84 = runningAverageOverPriorDays({year, month, day}, 84, entryDictionary);
-          const fakeDate = makeFakeDate(month, day);
+          const fakeDate = dates.makeFakeDate(month, day);
           averages[year].dateSeries.push(fakeDate);
           averages[year].avgDays7.push(days7);
           averages[year].avgDays28.push(days28);
@@ -203,8 +187,8 @@ function constructDict(data) {
       smoothed.push({date, count});
       return smoothed;
     }
-    const lastMeasurement = last(smoothed);
-    const difference = dayDifference(lastMeasurement.date, date);
+    const lastMeasurement = arrays.last(smoothed);
+    const difference = dates.dayDifference(lastMeasurement.date, date);
     if (difference <= 1) {
       smoothed.push({date, count});
     } else {
@@ -213,7 +197,7 @@ function constructDict(data) {
       for (let i = 1; i < difference; i++) {
         const missingDate = new Date(lastMeasurementDate);
         missingDate.setDate(lastMeasurementDate.getDate() + i);
-        smoothed.push({date: ymdFromDate(missingDate), count: dailyAverage});
+        smoothed.push({date: dates.ymdFromDate(missingDate), count: dailyAverage});
       }
       smoothed.push({date, count: dailyAverage});
     }
@@ -233,8 +217,8 @@ function constructDict(data) {
 }
 
 function buildConfigsForPlotly({rawData, averages}) {
-  const transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
-  return keys(rawData).reduce(
+  const transformedData = objects.objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
+  return objects.keys(rawData).reduce(
     (dataToChart, year) => {
       const countChartOptions = { mode: "markers", opacity: 0.3, marker: { size: 15 } };
       const averagesChartsOptions = { mode: "line" };
@@ -254,14 +238,10 @@ global.showChart = function({gistId, filename}) {
     return false;
   }
   const {newPlot} = global.Plotly;
-  return fetchGist(gistId)
-    .then(({files, html_url}) => {
-      // TODO there should be a split here in the pipeline or something...
-      // (there are two things to do with the result of fetching that gist)
-      html.findId("charts").appendChild(html.createLink({text: "data source", href: html_url}));
-      return fetch(files[filename].raw_url)
-        .then(checkStatus)
-        .then(extractJson);
+  fetchFileInGist(filename, gistId)
+    .then(({fileUrl, data}) => {
+      html.findId("charts").appendChild(html.createLink({text: "data source", href: fileUrl}));
+      return data;
     })
     .then(constructDict)
     .then(calculateAverages) // need to calculate averages only once all data is collected

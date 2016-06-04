@@ -33,4 +33,5 @@ export function removeNodesInNodelist(nodelist) {
   while (node = nodelist[nodelist.length - 1]) { // needs to recalculate placeholdersNodelist.length on each iteration
     node.remove();
   }
+  // TODO use a for loop?
 }
