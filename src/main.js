@@ -1,14 +1,13 @@
 import fetchGist from "./gistApi"
+import plotly from "./plotly";
 import {
   checkStatus,
   dayDifference,
   extractJson,
   keys,
   last,
-  objectKeyValPairs,
   padZero,
   range,
-  sortByFirstElement,
   sum,
   ymdFromDate
 } from "./utilities";
@@ -65,56 +64,6 @@ function runningAverageOverPriorDays(
 const FAKE_YEAR = 1970;
 function makeFakeDate(month, day) {
   return new Date(FAKE_YEAR, month-1, day);
-}
-
-function storeData(store, count, month, day) {
-  // need to normalize all dates to same year,
-  // so charting lib places all e.g. Jul 13s in the same X-axis position
-  store.dateSeries.push(makeFakeDate(month, day));
-  store.rawCount.push(count);
-  return store;
-}
-
-function buildDateAndCountArrays(month, monthData) {
-  return objectKeyValPairs(monthData)
-    .sort(sortByFirstElement)
-    .reduce(
-      (dayAcc, [day, dayData]) => storeData(dayAcc, dayData.count, month, day),
-      newEmptyDataThing()
-    );
-}
-
-function buildDateAndCountObject(monthAcc, [month, monthData]) {
-  const {dateSeries, rawCount} = buildDateAndCountArrays(month, monthData);
-  return {
-    dateSeries: monthAcc.dateSeries.concat(dateSeries),
-    rawCount: monthAcc.rawCount.concat(rawCount)
-  };
-}
-
-function buildSeparateDataSets(yearAcc, [year, yearData]) {
-  /* feed through a .reduce(); will return an object shaped like...
-     {
-       2014: {
-         dateSeries: [...]
-         rawCount: [...]
-         averages...
-       },
-       ...
-     }
-   */
-  yearAcc[year] =
-    objectKeyValPairs(yearData)
-      .sort(sortByFirstElement)
-      .reduce(buildDateAndCountObject, newEmptyDataThing());
-  return yearAcc;
-}
-
-function newEmptyDataThing() {
-  return {
-    dateSeries: [],
-    rawCount: []
-  };
 }
 
 function calculateAverages(entryDictionary) {
@@ -177,17 +126,6 @@ function extractData(year, measure, data, opts) {
     y: data[year][measure]
   };
   return Object.assign(defaults, opts);
-}
-
-function plotLayout(opts) {
-  return Object.assign({
-    type: "date",
-    xaxis: {
-      tickformat: "%b %d"
-    },
-    yaxis: {
-    }
-  }, opts);
 }
 
 function die() {
@@ -259,10 +197,9 @@ function constructDict(data) {
 }
 
 function buildConfigsForPlotly({rawData, averages}) {
-  const transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
-  return keys(transformedData).reduce(
+  return keys(rawData).reduce(
     (dataToChart, year) => {
-      dataToChart.dataForCollectedChart.push(extractData(year, "rawCount", transformedData, { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
+      dataToChart.dataForCollectedChart.push(extractData(year, "rawCount", rawData, { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
       dataToChart.dataFor7dayChart.push(extractData(year, "avgDays7", averages, { mode: "line" }));
       dataToChart.dataFor28dayChart.push(extractData(year, "avgDays28", averages, { mode: "line" }));
       dataToChart.dataFor84dayChart.push(extractData(year, "avgDays84", averages, { mode: "line" }));
@@ -291,9 +228,9 @@ global.showChart = function({gistId, filename}) {
       const {dataForCollectedChart, dataFor7dayChart, dataFor28dayChart, dataFor84dayChart} = configsForPlotly;
       removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
       const plotlyConfig = {displayModeBar: false};
-      global.Plotly.newPlot("raw", dataForCollectedChart, plotLayout({title: "eggs collected per day"}) , plotlyConfig);
-      global.Plotly.newPlot("1wk", dataFor7dayChart     , plotLayout({title: "1-week rolling average"}) , plotlyConfig);
-      global.Plotly.newPlot("1mo", dataFor28dayChart    , plotLayout({title: "1-month rolling average"}), plotlyConfig);
-      global.Plotly.newPlot("3mo", dataFor84dayChart    , plotLayout({title: "3-month rolling average"}), plotlyConfig);
+      global.Plotly.newPlot("raw", dataForCollectedChart, plotly.layout({title: "eggs collected per day"}) , plotlyConfig);
+      global.Plotly.newPlot("1wk", dataFor7dayChart     , plotly.layout({title: "1-week rolling average"}) , plotlyConfig);
+      global.Plotly.newPlot("1mo", dataFor28dayChart    , plotly.layout({title: "1-month rolling average"}), plotlyConfig);
+      global.Plotly.newPlot("3mo", dataFor84dayChart    , plotly.layout({title: "3-month rolling average"}), plotlyConfig);
     });
 };
