@@ -2,8 +2,6 @@
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-/* global console, document, Plotly */
-
 var GIST_ID = "c5cb1b4ceaf938d8801b60fd241fabf9";
 var GIST_FILENAME = "eggcount.json";
 
@@ -70,9 +68,7 @@ function runningAverageOverPriorDays(_ref, numDays, dateEntries) {
 }
 
 var FAKE_YEAR = 1970;
-
 function makeFakeDate(month, day) {
-  // need to normalize all dates to same year, so chart lib places all e.g. Jul 13s in the same X-axis position
   return new Date(FAKE_YEAR, month - 1, day);
 }
 
@@ -104,7 +100,9 @@ function buildSeparateDataSets(yearAcc, _ref2) {
       var day = _ref7[0];
       var dayData = _ref7[1];
 
-      dayAcc.dateSeries.push(makeFakeDate(month, day)); // need to normalize all dates to same year, so chart lib places all e.g. Jul 13s in the same X-axis position
+      // need to normalize all dates to same year,
+      // so charting lib places all e.g. Jul 13s in the same X-axis position
+      dayAcc.dateSeries.push(makeFakeDate(month, day));
       dayAcc.rawCount.push(dayData.count);
       return dayAcc;
     }, newEmptyDataThing());
@@ -356,7 +354,7 @@ global.showChart = function () {
       var data = _ref12.data;
       var layout = _ref12.layout;
       var config = _ref12.config;
-      return Plotly.newPlot(domId, data, layout, config);
+      return global.Plotly.newPlot(domId, data, layout, config);
     });
   }); // fetch pipeline
 };
