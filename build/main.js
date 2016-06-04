@@ -285,8 +285,7 @@ function buildConfigsForPlotly(_ref10) {
   var averages = _ref10.averages;
 
   var transformedData = (0, _utilities.objectKeyValPairs)(rawData).reduce(buildSeparateDataSets, {});
-  var years = (0, _utilities.keys)(transformedData);
-  return years.reduce(function (acc, year) {
+  return (0, _utilities.keys)(transformedData).reduce(function (acc, year) {
     acc.dataForCollectedChart.push(extractData(year, "rawCount", transformedData, { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
     acc.dataFor7dayChart.push(extractData(year, "avgDays7", averages, { mode: "line" }));
     acc.dataFor28dayChart.push(extractData(year, "avgDays28", averages, { mode: "line" }));
@@ -322,5 +321,5 @@ global.showChart = function (_ref11) {
     global.Plotly.newPlot("1wk", dataFor7dayChart, plotLayout({ title: "1-week rolling average" }), plotlyConfig);
     global.Plotly.newPlot("1mo", dataFor28dayChart, plotLayout({ title: "1-month rolling average" }), plotlyConfig);
     global.Plotly.newPlot("3mo", dataFor84dayChart, plotLayout({ title: "3-month rolling average" }), plotlyConfig);
-  }); // fetch pipeline
+  });
 };

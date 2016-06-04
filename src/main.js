@@ -260,8 +260,7 @@ function constructDict(data) {
 
 function buildConfigsForPlotly({rawData, averages}) {
   const transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
-  const years = keys(transformedData);
-  return years.reduce(
+  return keys(transformedData).reduce(
     (acc, year) => {
       acc.dataForCollectedChart.push(extractData(year, "rawCount", transformedData, { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
       acc.dataFor7dayChart.push(extractData(year, "avgDays7", averages, { mode: "line" }));
@@ -296,6 +295,5 @@ global.showChart = function({gistId, filename}) {
       global.Plotly.newPlot("1wk", dataFor7dayChart     , plotLayout({title: "1-week rolling average"}) , plotlyConfig);
       global.Plotly.newPlot("1mo", dataFor28dayChart    , plotLayout({title: "1-month rolling average"}), plotlyConfig);
       global.Plotly.newPlot("3mo", dataFor84dayChart    , plotLayout({title: "3-month rolling average"}), plotlyConfig);
-    })
-  ; // fetch pipeline
+    });
 };
