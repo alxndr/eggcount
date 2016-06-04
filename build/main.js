@@ -10,6 +10,10 @@ var _plotly = require("./plotly");
 
 var _plotly2 = _interopRequireDefault(_plotly);
 
+var _html = require("./html");
+
+var _html2 = _interopRequireDefault(_html);
+
 var _utilities = require("./utilities");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -138,22 +142,6 @@ function die() {
   charts.insertBefore(p, firstChart);
 }
 
-function removeNodesInNodelist(nodelist) {
-  var node = void 0;
-  while (node = nodelist[nodelist.length - 1]) {
-    // need to recalculate placeholdersNodelist.length on each iteration
-    node.remove();
-  }
-}
-
-function appendLink(url) {
-  var charts = document.getElementById("charts");
-  var link = document.createElement("a");
-  link.appendChild(document.createTextNode("data source"));
-  link.href = url;
-  charts.appendChild(link);
-}
-
 function sortInput(a, b) {
   var aDate = new Date(a.date.split("-"));
   var bDate = new Date(b.date.split("-"));
@@ -217,10 +205,12 @@ function buildConfigsForPlotly(_ref4) {
   var averages = _ref4.averages;
 
   return (0, _utilities.keys)(rawData).reduce(function (dataToChart, year) {
-    dataToChart.dataForCollectedChart.push(extractData(year, "rawCount", rawData, { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
-    dataToChart.dataFor7dayChart.push(extractData(year, "avgDays7", averages, { mode: "line" }));
-    dataToChart.dataFor28dayChart.push(extractData(year, "avgDays28", averages, { mode: "line" }));
-    dataToChart.dataFor84dayChart.push(extractData(year, "avgDays84", averages, { mode: "line" }));
+    var countChartOptions = { mode: "markers", opacity: 0.3, marker: { size: 15 } };
+    var averagesChartsOptions = { mode: "line" };
+    dataToChart.dataForCollectedChart.push(extractData(year, "rawCount", rawData, countChartOptions));
+    dataToChart.dataFor7dayChart.push(extractData(year, "avgDays7", averages, averagesChartsOptions));
+    dataToChart.dataFor28dayChart.push(extractData(year, "avgDays28", averages, averagesChartsOptions));
+    dataToChart.dataFor84dayChart.push(extractData(year, "avgDays84", averages, averagesChartsOptions));
     return dataToChart;
   }, { dataForCollectedChart: [], dataFor7dayChart: [], dataFor28dayChart: [], dataFor84dayChart: [] });
 }
@@ -233,11 +223,17 @@ global.showChart = function (_ref5) {
     die();
     return false;
   }
+  var newPlot = global.Plotly.newPlot;
+
   return (0, _gistApi2.default)(gistId).then(function (_ref6) {
     var files = _ref6.files;
     var html_url = _ref6.html_url;
 
-    appendLink(html_url);
+    // TODO there should be a split here in the pipeline or something...
+    // (there are two things to do with the result of fetching that gist)
+    var charts = document.getElementById("charts");
+    var link = _html2.default.createLink({ text: "data source", href: html_url });
+    charts.appendChild(link);
     return fetch(files[filename].raw_url);
   }).then(_utilities.checkStatus).then(_utilities.extractJson).then(constructDict).then(calculateAverages) // need to calculate averages only once all data is collected
   .then(buildConfigsForPlotly).then(function (configsForPlotly) {
@@ -246,11 +242,11 @@ global.showChart = function (_ref5) {
     var dataFor28dayChart = configsForPlotly.dataFor28dayChart;
     var dataFor84dayChart = configsForPlotly.dataFor84dayChart;
 
-    removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
+    _html2.default.removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
     var plotlyConfig = { displayModeBar: false };
-    global.Plotly.newPlot("raw", dataForCollectedChart, _plotly2.default.layout({ title: "eggs collected per day" }), plotlyConfig);
-    global.Plotly.newPlot("1wk", dataFor7dayChart, _plotly2.default.layout({ title: "1-week rolling average" }), plotlyConfig);
-    global.Plotly.newPlot("1mo", dataFor28dayChart, _plotly2.default.layout({ title: "1-month rolling average" }), plotlyConfig);
-    global.Plotly.newPlot("3mo", dataFor84dayChart, _plotly2.default.layout({ title: "3-month rolling average" }), plotlyConfig);
+    newPlot("raw", dataForCollectedChart, _plotly2.default.layout({ title: "eggs collected per day" }), plotlyConfig);
+    newPlot("1wk", dataFor7dayChart, _plotly2.default.layout({ title: "1-week rolling average" }), plotlyConfig);
+    newPlot("1mo", dataFor28dayChart, _plotly2.default.layout({ title: "1-month rolling average" }), plotlyConfig);
+    newPlot("3mo", dataFor84dayChart, _plotly2.default.layout({ title: "3-month rolling average" }), plotlyConfig);
   });
 };

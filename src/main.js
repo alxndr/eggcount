@@ -1,5 +1,6 @@
 import fetchGist from "./gistApi"
 import plotly from "./plotly";
+import html from "./html";
 import {
   checkStatus,
   dayDifference,
@@ -137,21 +138,6 @@ function die() {
   charts.insertBefore(p, firstChart);
 }
 
-function removeNodesInNodelist(nodelist) {
-  let node;
-  while (node = nodelist[nodelist.length - 1]) { // need to recalculate placeholdersNodelist.length on each iteration
-    node.remove();
-  }
-}
-
-function appendLink(url) {
-  const charts = document.getElementById("charts");
-  const link = document.createElement("a");
-  link.appendChild(document.createTextNode("data source"));
-  link.href = url;
-  charts.appendChild(link);
-}
-
 function sortInput(a, b) {
   const aDate = new Date(a.date.split("-"));
   const bDate = new Date(b.date.split("-"));
@@ -199,10 +185,12 @@ function constructDict(data) {
 function buildConfigsForPlotly({rawData, averages}) {
   return keys(rawData).reduce(
     (dataToChart, year) => {
-      dataToChart.dataForCollectedChart.push(extractData(year, "rawCount", rawData, { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
-      dataToChart.dataFor7dayChart.push(extractData(year, "avgDays7", averages, { mode: "line" }));
-      dataToChart.dataFor28dayChart.push(extractData(year, "avgDays28", averages, { mode: "line" }));
-      dataToChart.dataFor84dayChart.push(extractData(year, "avgDays84", averages, { mode: "line" }));
+      const countChartOptions = { mode: "markers", opacity: 0.3, marker: { size: 15 } };
+      const averagesChartsOptions = { mode: "line" };
+      dataToChart.dataForCollectedChart.push(extractData(year, "rawCount", rawData, countChartOptions));
+      dataToChart.dataFor7dayChart.push(extractData(year, "avgDays7", averages, averagesChartsOptions));
+      dataToChart.dataFor28dayChart.push(extractData(year, "avgDays28", averages, averagesChartsOptions));
+      dataToChart.dataFor84dayChart.push(extractData(year, "avgDays84", averages, averagesChartsOptions));
       return dataToChart;
     },
     {dataForCollectedChart:[], dataFor7dayChart:[], dataFor28dayChart:[], dataFor84dayChart:[]}
@@ -214,9 +202,14 @@ global.showChart = function({gistId, filename}) {
     die();
     return false;
   }
+  const {newPlot} = global.Plotly;
   return fetchGist(gistId)
     .then(({files, html_url}) => {
-      appendLink(html_url);
+      // TODO there should be a split here in the pipeline or something...
+      // (there are two things to do with the result of fetching that gist)
+      const charts = document.getElementById("charts");
+      const link = html.createLink({text: "data source", href: html_url});
+      charts.appendChild(link);
       return fetch(files[filename].raw_url);
     })
     .then(checkStatus)
@@ -226,11 +219,11 @@ global.showChart = function({gistId, filename}) {
     .then(buildConfigsForPlotly)
     .then((configsForPlotly) => {
       const {dataForCollectedChart, dataFor7dayChart, dataFor28dayChart, dataFor84dayChart} = configsForPlotly;
-      removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
+      html.removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
       const plotlyConfig = {displayModeBar: false};
-      global.Plotly.newPlot("raw", dataForCollectedChart, plotly.layout({title: "eggs collected per day"}) , plotlyConfig);
-      global.Plotly.newPlot("1wk", dataFor7dayChart     , plotly.layout({title: "1-week rolling average"}) , plotlyConfig);
-      global.Plotly.newPlot("1mo", dataFor28dayChart    , plotly.layout({title: "1-month rolling average"}), plotlyConfig);
-      global.Plotly.newPlot("3mo", dataFor84dayChart    , plotly.layout({title: "3-month rolling average"}), plotlyConfig);
+      newPlot("raw", dataForCollectedChart, plotly.layout({title: "eggs collected per day"}) , plotlyConfig);
+      newPlot("1wk", dataFor7dayChart     , plotly.layout({title: "1-week rolling average"}) , plotlyConfig);
+      newPlot("1mo", dataFor28dayChart    , plotly.layout({title: "1-month rolling average"}), plotlyConfig);
+      newPlot("3mo", dataFor84dayChart    , plotly.layout({title: "3-month rolling average"}), plotlyConfig);
     });
 };
