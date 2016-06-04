@@ -13,10 +13,6 @@ export function sortByFirstElement([a], [b]) {
   return 0;
 }
 
-export function sum(sum, n) {
-  return sum + n;
-}
-
 export function range(start, end) {
   return rangeExclusive(start, end + 1);
 }

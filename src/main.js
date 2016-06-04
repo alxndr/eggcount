@@ -60,7 +60,7 @@ function runningAverageOverPriorDays(
   if (dataToAverage.length === 0) {
     return null;
   }
-  return dataToAverage.reduce(arrays.sum) / numDays;
+  return dataToAverage.reduce((sum, n) => sum + n) / numDays;
 }
 
 const FAKE_YEAR = 1970;

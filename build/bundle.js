@@ -2313,7 +2313,6 @@ var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
 
 exports.last = last;
 exports.sortByFirstElement = sortByFirstElement;
-exports.sum = sum;
 exports.range = range;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -2339,10 +2338,6 @@ function sortByFirstElement(_ref, _ref2) {
     return 1;
   }
   return 0;
-}
-
-function sum(sum, n) {
-  return sum + n;
 }
 
 function range(start, end) {
@@ -2617,7 +2612,9 @@ function runningAverageOverPriorDays(_ref, numDays, dateEntries) {
   if (dataToAverage.length === 0) {
     return null;
   }
-  return dataToAverage.reduce(arrays.sum) / numDays;
+  return dataToAverage.reduce(function (sum, n) {
+    return sum + n;
+  }) / numDays;
 }
 
 var FAKE_YEAR = 1970;
