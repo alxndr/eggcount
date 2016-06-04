@@ -11,6 +11,10 @@
     "watch": "npm-watch"
   },
   "watch": {
+    "build": {
+      "patterns": ["src"],
+      "quiet": true
+    },
     "ci": {
       "patterns": ["src", "test"],
       "quiet": true
