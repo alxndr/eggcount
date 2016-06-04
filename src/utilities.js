@@ -1,14 +1,6 @@
-export function keys(obj) {
-  return Object.keys(obj).sort();
-}
-
 export function last(array) {
   // return the last element in the array
   return array.slice(-1)[0];
-}
-
-export function objectKeyValPairs(obj) {
-  return keys(obj).map((key) => [key, obj[key]]);
 }
 
 export function padZero(thing, length = 2) {

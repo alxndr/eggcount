@@ -2,18 +2,14 @@ import { fetchFileInGist } from "./gistApi"
 import plotly from "./plotly";
 import * as html from "./html";
 import {
-  keys,
   last,
-  objectKeyValPairs,
   padZero,
   range,
   sortByFirstElement,
   sum
 } from "./utilities";
-import {
-  dayDifference,
-  ymdFromDate
-} from "./dates";
+import * as objects from "./objects";
+import * as dates from "./dates";
 
 function die() {
   console.error("Uh oh! Expected Plotly to be globally available.");
@@ -24,9 +20,9 @@ function die() {
 }
 
 function dateOfFirstEntry(dateEntries) {
-  const firstYear = keys(dateEntries)[0];
-  const firstMonth = keys(dateEntries[firstYear])[0];
-  const firstDay = keys(dateEntries[firstYear][firstMonth])[0];
+  const firstYear = objects.keys(dateEntries)[0];
+  const firstMonth = objects.keys(dateEntries[firstYear])[0];
+  const firstDay = objects.keys(dateEntries[firstYear][firstMonth])[0];
   const d = new Date(firstYear, firstMonth-1, firstDay);
   d.setHours(1); // so other calculations of this date will be before...
   return d;
@@ -94,7 +90,7 @@ function emptyCounts() {
 
 function buildDateAndCountObjects(monthAcc, [month, monthData]) {
   const {dateSeries, rawCount} =
-    objectKeyValPairs(monthData)
+    objects.objectKeyValPairs(monthData)
       .sort(sortByFirstElement)
       .reduce(
         (dayAcc, [day, dayData]) => recordStuff(dayAcc, dayData.count, month, day),
@@ -118,14 +114,14 @@ function buildSeparateDataSets(yearAcc, [year, yearData]) {
      }
    */
   yearAcc[year] =
-    objectKeyValPairs(yearData)
+    objects.objectKeyValPairs(yearData)
       .sort(sortByFirstElement)
       .reduce(buildDateAndCountObjects, emptyCounts());
   return yearAcc;
 }
 
 function calculateAverages(entryDictionary) {
-  const years = keys(entryDictionary);
+  const years = objects.keys(entryDictionary);
   let averages = {};
 
   // iterates through all days between first and last data points, and
@@ -202,7 +198,7 @@ function constructDict(data) {
       return smoothed;
     }
     const lastMeasurement = last(smoothed);
-    const difference = dayDifference(lastMeasurement.date, date);
+    const difference = dates.dayDifference(lastMeasurement.date, date);
     if (difference <= 1) {
       smoothed.push({date, count});
     } else {
@@ -211,7 +207,7 @@ function constructDict(data) {
       for (let i = 1; i < difference; i++) {
         const missingDate = new Date(lastMeasurementDate);
         missingDate.setDate(lastMeasurementDate.getDate() + i);
-        smoothed.push({date: ymdFromDate(missingDate), count: dailyAverage});
+        smoothed.push({date: dates.ymdFromDate(missingDate), count: dailyAverage});
       }
       smoothed.push({date, count: dailyAverage});
     }
@@ -231,8 +227,8 @@ function constructDict(data) {
 }
 
 function buildConfigsForPlotly({rawData, averages}) {
-  const transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
-  return keys(rawData).reduce(
+  const transformedData = objects.objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
+  return objects.keys(rawData).reduce(
     (dataToChart, year) => {
       const countChartOptions = { mode: "markers", opacity: 0.3, marker: { size: 15 } };
       const averagesChartsOptions = { mode: "line" };

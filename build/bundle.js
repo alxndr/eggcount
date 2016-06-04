@@ -2247,6 +2247,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.dayDifference = dayDifference;
 exports.ymdFromDate = ymdFromDate;
+
+var _utilities = require("./utilities");
+
 var MSEC_IN_1_SEC = 1000;
 var SEC_IN_1_MIN = 60;
 var MIN_IN_1_HR = 60;
@@ -2257,10 +2260,10 @@ function dayDifference(earlierDate, laterDate) {
 }
 
 function ymdFromDate(date) {
-  return [date.getYear() + 1900, date.getMonth() + 1, date.getDate()].join("-");
+  return [date.getYear() + 1900, (0, _utilities.padZero)(date.getMonth() + 1), (0, _utilities.padZero)(date.getDate())].join("-");
 }
 
-},{}],91:[function(require,module,exports){
+},{"./utilities":97}],91:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2419,7 +2422,13 @@ var html = _interopRequireWildcard(_html);
 
 var _utilities = require("./utilities");
 
+var _objects = require("./objects");
+
+var objects = _interopRequireWildcard(_objects);
+
 var _dates = require("./dates");
+
+var dates = _interopRequireWildcard(_dates);
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
 
@@ -2431,9 +2440,9 @@ function die() {
 }
 
 function dateOfFirstEntry(dateEntries) {
-  var firstYear = (0, _utilities.keys)(dateEntries)[0];
-  var firstMonth = (0, _utilities.keys)(dateEntries[firstYear])[0];
-  var firstDay = (0, _utilities.keys)(dateEntries[firstYear][firstMonth])[0];
+  var firstYear = objects.keys(dateEntries)[0];
+  var firstMonth = objects.keys(dateEntries[firstYear])[0];
+  var firstDay = objects.keys(dateEntries[firstYear][firstMonth])[0];
   var d = new Date(firstYear, firstMonth - 1, firstDay);
   d.setHours(1); // so other calculations of this date will be before...
   return d;
@@ -2504,7 +2513,7 @@ function buildDateAndCountObjects(monthAcc, _ref2) {
   var month = _ref3[0];
   var monthData = _ref3[1];
 
-  var _objectKeyValPairs$so = (0, _utilities.objectKeyValPairs)(monthData).sort(_utilities.sortByFirstElement).reduce(function (dayAcc, _ref4) {
+  var _objects$objectKeyVal = objects.objectKeyValPairs(monthData).sort(_utilities.sortByFirstElement).reduce(function (dayAcc, _ref4) {
     var _ref5 = (0, _slicedToArray3.default)(_ref4, 2);
 
     var day = _ref5[0];
@@ -2512,8 +2521,8 @@ function buildDateAndCountObjects(monthAcc, _ref2) {
     return recordStuff(dayAcc, dayData.count, month, day);
   }, emptyCounts());
 
-  var dateSeries = _objectKeyValPairs$so.dateSeries;
-  var rawCount = _objectKeyValPairs$so.rawCount;
+  var dateSeries = _objects$objectKeyVal.dateSeries;
+  var rawCount = _objects$objectKeyVal.rawCount;
 
   return {
     dateSeries: monthAcc.dateSeries.concat(dateSeries),
@@ -2537,12 +2546,12 @@ function buildSeparateDataSets(yearAcc, _ref6) {
        ...
      }
    */
-  yearAcc[year] = (0, _utilities.objectKeyValPairs)(yearData).sort(_utilities.sortByFirstElement).reduce(buildDateAndCountObjects, emptyCounts());
+  yearAcc[year] = objects.objectKeyValPairs(yearData).sort(_utilities.sortByFirstElement).reduce(buildDateAndCountObjects, emptyCounts());
   return yearAcc;
 }
 
 function calculateAverages(entryDictionary) {
-  var years = (0, _utilities.keys)(entryDictionary);
+  var years = objects.keys(entryDictionary);
   var averages = {};
 
   // iterates through all days between first and last data points, and
@@ -2623,7 +2632,7 @@ function constructDict(data) {
       return smoothed;
     }
     var lastMeasurement = (0, _utilities.last)(smoothed);
-    var difference = (0, _dates.dayDifference)(lastMeasurement.date, date);
+    var difference = dates.dayDifference(lastMeasurement.date, date);
     if (difference <= 1) {
       smoothed.push({ date: date, count: count });
     } else {
@@ -2632,7 +2641,7 @@ function constructDict(data) {
       for (var i = 1; i < difference; i++) {
         var missingDate = new Date(lastMeasurementDate);
         missingDate.setDate(lastMeasurementDate.getDate() + i);
-        smoothed.push({ date: (0, _dates.ymdFromDate)(missingDate), count: dailyAverage });
+        smoothed.push({ date: dates.ymdFromDate(missingDate), count: dailyAverage });
       }
       smoothed.push({ date: date, count: dailyAverage });
     }
@@ -2665,8 +2674,8 @@ function buildConfigsForPlotly(_ref10) {
   var rawData = _ref10.rawData;
   var averages = _ref10.averages;
 
-  var transformedData = (0, _utilities.objectKeyValPairs)(rawData).reduce(buildSeparateDataSets, {});
-  return (0, _utilities.keys)(rawData).reduce(function (dataToChart, year) {
+  var transformedData = objects.objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
+  return objects.keys(rawData).reduce(function (dataToChart, year) {
     var countChartOptions = { mode: "markers", opacity: 0.3, marker: { size: 15 } };
     var averagesChartsOptions = { mode: "line" };
     dataToChart.dataForCollectedChart.push(extractData(year, "rawCount", transformedData, countChartOptions));
@@ -2710,7 +2719,33 @@ global.showChart = function (_ref11) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./dates":90,"./gistApi":91,"./html":92,"./plotly":95,"./utilities":96,"babel-runtime/core-js/object/assign":3,"babel-runtime/helpers/slicedToArray":7}],95:[function(require,module,exports){
+},{"./dates":90,"./gistApi":91,"./html":92,"./objects":95,"./plotly":96,"./utilities":97,"babel-runtime/core-js/object/assign":3,"babel-runtime/helpers/slicedToArray":7}],95:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _keys = require("babel-runtime/core-js/object/keys");
+
+var _keys2 = _interopRequireDefault(_keys);
+
+exports.keys = keys;
+exports.objectKeyValPairs = objectKeyValPairs;
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function keys(obj) {
+  return (0, _keys2.default)(obj).sort();
+}
+
+function objectKeyValPairs(obj) {
+  return keys(obj).map(function (key) {
+    return [key, obj[key]];
+  });
+}
+
+},{"babel-runtime/core-js/object/keys":4}],96:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2737,7 +2772,7 @@ exports.default = {
   layout: layout
 };
 
-},{"babel-runtime/core-js/object/assign":3}],96:[function(require,module,exports){
+},{"babel-runtime/core-js/object/assign":3}],97:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2748,13 +2783,7 @@ var _slicedToArray2 = require("babel-runtime/helpers/slicedToArray");
 
 var _slicedToArray3 = _interopRequireDefault(_slicedToArray2);
 
-var _keys = require("babel-runtime/core-js/object/keys");
-
-var _keys2 = _interopRequireDefault(_keys);
-
-exports.keys = keys;
 exports.last = last;
-exports.objectKeyValPairs = objectKeyValPairs;
 exports.padZero = padZero;
 exports.sortByFirstElement = sortByFirstElement;
 exports.sum = sum;
@@ -2762,19 +2791,9 @@ exports.range = range;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function keys(obj) {
-  return (0, _keys2.default)(obj).sort();
-}
-
 function last(array) {
   // return the last element in the array
   return array.slice(-1)[0];
-}
-
-function objectKeyValPairs(obj) {
-  return keys(obj).map(function (key) {
-    return [key, obj[key]];
-  });
 }
 
 function padZero(thing) {
@@ -2821,4 +2840,4 @@ function rangeExclusive(start, end) {
   });
 }
 
-},{"babel-runtime/core-js/object/keys":4,"babel-runtime/helpers/slicedToArray":7}]},{},[90,91,92,93,94,95,96]);
+},{"babel-runtime/helpers/slicedToArray":7}]},{},[90,91,92,93,94,95,96,97]);
