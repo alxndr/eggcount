@@ -231,16 +231,14 @@ global.showChart = function (_ref5) {
 
     // TODO there should be a split here in the pipeline or something...
     // (there are two things to do with the result of fetching that gist)
-    var charts = document.getElementById("charts");
-    var link = _html2.default.createLink({ text: "data source", href: html_url });
-    charts.appendChild(link);
+    document.getElementById("charts").appendChild(_html2.default.createLink({ text: "data source", href: html_url }));
     return fetch(files[filename].raw_url);
   }).then(_utilities.checkStatus).then(_utilities.extractJson).then(constructDict).then(calculateAverages) // need to calculate averages only once all data is collected
-  .then(buildConfigsForPlotly).then(function (configsForPlotly) {
-    var dataForCollectedChart = configsForPlotly.dataForCollectedChart;
-    var dataFor7dayChart = configsForPlotly.dataFor7dayChart;
-    var dataFor28dayChart = configsForPlotly.dataFor28dayChart;
-    var dataFor84dayChart = configsForPlotly.dataFor84dayChart;
+  .then(buildConfigsForPlotly).then(function (_ref7) {
+    var dataForCollectedChart = _ref7.dataForCollectedChart;
+    var dataFor7dayChart = _ref7.dataFor7dayChart;
+    var dataFor28dayChart = _ref7.dataFor28dayChart;
+    var dataFor84dayChart = _ref7.dataFor84dayChart;
 
     _html2.default.removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
     var plotlyConfig = { displayModeBar: false };

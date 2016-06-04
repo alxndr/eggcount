@@ -207,9 +207,7 @@ global.showChart = function({gistId, filename}) {
     .then(({files, html_url}) => {
       // TODO there should be a split here in the pipeline or something...
       // (there are two things to do with the result of fetching that gist)
-      const charts = document.getElementById("charts");
-      const link = html.createLink({text: "data source", href: html_url});
-      charts.appendChild(link);
+      document.getElementById("charts").appendChild(html.createLink({text: "data source", href: html_url}));
       return fetch(files[filename].raw_url);
     })
     .then(checkStatus)
@@ -217,8 +215,7 @@ global.showChart = function({gistId, filename}) {
     .then(constructDict)
     .then(calculateAverages) // need to calculate averages only once all data is collected
     .then(buildConfigsForPlotly)
-    .then((configsForPlotly) => {
-      const {dataForCollectedChart, dataFor7dayChart, dataFor28dayChart, dataFor84dayChart} = configsForPlotly;
+    .then(({dataForCollectedChart, dataFor7dayChart, dataFor28dayChart, dataFor84dayChart}) => {
       html.removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
       const plotlyConfig = {displayModeBar: false};
       newPlot("raw", dataForCollectedChart, plotly.layout({title: "eggs collected per day"}) , plotlyConfig);
