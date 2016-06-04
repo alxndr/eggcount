@@ -261,12 +261,12 @@ function constructDict(data) {
 function buildConfigsForPlotly({rawData, averages}) {
   const transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
   return keys(transformedData).reduce(
-    (acc, year) => {
-      acc.dataForCollectedChart.push(extractData(year, "rawCount", transformedData, { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
-      acc.dataFor7dayChart.push(extractData(year, "avgDays7", averages, { mode: "line" }));
-      acc.dataFor28dayChart.push(extractData(year, "avgDays28", averages, { mode: "line" }));
-      acc.dataFor84dayChart.push(extractData(year, "avgDays84", averages, { mode: "line" }));
-      return acc;
+    (dataToChart, year) => {
+      dataToChart.dataForCollectedChart.push(extractData(year, "rawCount", transformedData, { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
+      dataToChart.dataFor7dayChart.push(extractData(year, "avgDays7", averages, { mode: "line" }));
+      dataToChart.dataFor28dayChart.push(extractData(year, "avgDays28", averages, { mode: "line" }));
+      dataToChart.dataFor84dayChart.push(extractData(year, "avgDays84", averages, { mode: "line" }));
+      return dataToChart;
     },
     {dataForCollectedChart:[], dataFor7dayChart:[], dataFor28dayChart:[], dataFor84dayChart:[]}
   );

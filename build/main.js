@@ -285,12 +285,12 @@ function buildConfigsForPlotly(_ref10) {
   var averages = _ref10.averages;
 
   var transformedData = (0, _utilities.objectKeyValPairs)(rawData).reduce(buildSeparateDataSets, {});
-  return (0, _utilities.keys)(transformedData).reduce(function (acc, year) {
-    acc.dataForCollectedChart.push(extractData(year, "rawCount", transformedData, { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
-    acc.dataFor7dayChart.push(extractData(year, "avgDays7", averages, { mode: "line" }));
-    acc.dataFor28dayChart.push(extractData(year, "avgDays28", averages, { mode: "line" }));
-    acc.dataFor84dayChart.push(extractData(year, "avgDays84", averages, { mode: "line" }));
-    return acc;
+  return (0, _utilities.keys)(transformedData).reduce(function (dataToChart, year) {
+    dataToChart.dataForCollectedChart.push(extractData(year, "rawCount", transformedData, { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
+    dataToChart.dataFor7dayChart.push(extractData(year, "avgDays7", averages, { mode: "line" }));
+    dataToChart.dataFor28dayChart.push(extractData(year, "avgDays28", averages, { mode: "line" }));
+    dataToChart.dataFor84dayChart.push(extractData(year, "avgDays84", averages, { mode: "line" }));
+    return dataToChart;
   }, { dataForCollectedChart: [], dataFor7dayChart: [], dataFor28dayChart: [], dataFor84dayChart: [] });
 }
 
