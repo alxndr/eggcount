@@ -131,11 +131,10 @@ function extractData(year, measure, data, opts) {
 
 function die() {
   console.error("Uh oh! Expected Plotly to be globally available.");
-  const p = document.createElement("p"); // this is what JSX is for...
-  p.appendChild(document.createTextNode("Uh oh, can't find the graphing library! Try refreshing?"));
-  const charts = document.getElementById("charts");
-  const firstChart = charts.firstChild;
-  charts.insertBefore(p, firstChart);
+  html.insertFirst(
+    document.getElementById("charts"),
+    html.createP("Uh oh, can't find the graphing library! Try refreshing?")
+  );
 }
 
 function sortInput(a, b) {
