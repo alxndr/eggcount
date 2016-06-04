@@ -1,4 +1,4 @@
-import {checkStatus, extractJson} from "./utilities";
+import {checkStatus, extractJson} from "./http";
 
 export function fetchGist(gistId) {
   return fetch(`https://api.github.com/gists/${gistId}`)
@@ -7,7 +7,6 @@ export function fetchGist(gistId) {
 }
 
 export async function fetchFileInGist(filename, gistId) {
-  global.console.log(filename, gistId);
   const {files, html_url} = await fetchGist(gistId);
   const data =
   await fetch(files[filename].raw_url)

@@ -2240,7 +2240,6 @@ if (hadRuntime) {
 
 }).call(this,require('_process'),typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"_process":87}],90:[function(require,module,exports){
-(function (global){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2264,25 +2263,24 @@ var fetchFileInGist = exports.fetchFileInGist = function () {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            global.console.log(filename, gistId);
-            _context.next = 3;
+            _context.next = 2;
             return fetchGist(gistId);
 
-          case 3:
+          case 2:
             _ref = _context.sent;
             files = _ref.files;
             html_url = _ref.html_url;
-            _context.next = 8;
-            return fetch(files[filename].raw_url).then(_utilities.checkStatus).then(_utilities.extractJson);
+            _context.next = 7;
+            return fetch(files[filename].raw_url).then(_http.checkStatus).then(_http.extractJson);
 
-          case 8:
+          case 7:
             data = _context.sent;
             return _context.abrupt("return", {
               fileUrl: html_url,
               data: data
             });
 
-          case 10:
+          case 9:
           case "end":
             return _context.stop();
         }
@@ -2296,16 +2294,15 @@ var fetchFileInGist = exports.fetchFileInGist = function () {
 
 exports.fetchGist = fetchGist;
 
-var _utilities = require("./utilities");
+var _http = require("./http");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function fetchGist(gistId) {
-  return fetch("https://api.github.com/gists/" + gistId).then(_utilities.checkStatus).then(_utilities.extractJson);
+  return fetch("https://api.github.com/gists/" + gistId).then(_http.checkStatus).then(_http.extractJson);
 }
 
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./utilities":94,"babel-runtime/helpers/asyncToGenerator":6,"babel-runtime/regenerator":8}],91:[function(require,module,exports){
+},{"./http":92,"babel-runtime/helpers/asyncToGenerator":6,"babel-runtime/regenerator":8}],91:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2359,6 +2356,27 @@ function removeNodesInNodelist(nodelist) {
 }
 
 },{}],92:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.checkStatus = checkStatus;
+exports.extractJson = extractJson;
+function checkStatus(response) {
+  if (response.status >= 200 && response.status < 300) {
+    return response;
+  }
+  var error = new Error(response.statusText);
+  error.response = response;
+  throw error;
+}
+
+function extractJson(response) {
+  return response.json();
+}
+
+},{}],93:[function(require,module,exports){
 (function (global){
 "use strict";
 
@@ -2648,14 +2666,12 @@ global.showChart = function (_ref11) {
   }
   var newPlot = global.Plotly.newPlot;
 
-  return (0, _gistApi.fetchGist)(gistId).then(function (_ref12) {
-    var files = _ref12.files;
-    var html_url = _ref12.html_url;
+  (0, _gistApi.fetchFileInGist)(filename, gistId).then(function (_ref12) {
+    var fileUrl = _ref12.fileUrl;
+    var data = _ref12.data;
 
-    // TODO there should be a split here in the pipeline or something...
-    // (there are two things to do with the result of fetching that gist)
-    html.findId("charts").appendChild(html.createLink({ text: "data source", href: html_url }));
-    return fetch(files[filename].raw_url).then(_utilities.checkStatus).then(_utilities.extractJson);
+    html.findId("charts").appendChild(html.createLink({ text: "data source", href: fileUrl }));
+    return data;
   }).then(constructDict).then(calculateAverages) // need to calculate averages only once all data is collected
   .then(buildConfigsForPlotly).then(function (_ref13) {
     var dataForCollectedChart = _ref13.dataForCollectedChart;
@@ -2673,7 +2689,7 @@ global.showChart = function (_ref11) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./gistApi":90,"./html":91,"./plotly":93,"./utilities":94,"babel-runtime/core-js/object/assign":3,"babel-runtime/helpers/slicedToArray":7}],93:[function(require,module,exports){
+},{"./gistApi":90,"./html":91,"./plotly":94,"./utilities":95,"babel-runtime/core-js/object/assign":3,"babel-runtime/helpers/slicedToArray":7}],94:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2700,7 +2716,7 @@ exports.default = {
   layout: layout
 };
 
-},{"babel-runtime/core-js/object/assign":3}],94:[function(require,module,exports){
+},{"babel-runtime/core-js/object/assign":3}],95:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2715,9 +2731,7 @@ var _keys = require("babel-runtime/core-js/object/keys");
 
 var _keys2 = _interopRequireDefault(_keys);
 
-exports.checkStatus = checkStatus;
 exports.dayDifference = dayDifference;
-exports.extractJson = extractJson;
 exports.keys = keys;
 exports.last = last;
 exports.objectKeyValPairs = objectKeyValPairs;
@@ -2729,15 +2743,6 @@ exports.ymdFromDate = ymdFromDate;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-function checkStatus(response) {
-  if (response.status >= 200 && response.status < 300) {
-    return response;
-  }
-  var error = new Error(response.statusText);
-  error.response = response;
-  throw error;
-}
-
 var MSEC_IN_1_SEC = 1000;
 var SEC_IN_1_MIN = 60;
 var MIN_IN_1_HR = 60;
@@ -2745,10 +2750,6 @@ var HR_IN_1_DAY = 24;
 function dayDifference(earlierDate, laterDate) {
   // params are strings of yyyy-mm-dd
   return (new Date(laterDate.split("-")) - new Date(earlierDate.split("-"))) / MSEC_IN_1_SEC / SEC_IN_1_MIN / MIN_IN_1_HR / HR_IN_1_DAY;
-}
-
-function extractJson(response) {
-  return response.json();
 }
 
 function keys(obj) {
@@ -2814,4 +2815,4 @@ function ymdFromDate(date) {
   return [date.getYear() + 1900, date.getMonth() + 1, date.getDate()].join("-");
 }
 
-},{"babel-runtime/core-js/object/keys":4,"babel-runtime/helpers/slicedToArray":7}]},{},[90,91,92,93,94]);
+},{"babel-runtime/core-js/object/keys":4,"babel-runtime/helpers/slicedToArray":7}]},{},[90,91,92,93,94,95]);

@@ -1,12 +1,3 @@
-export function checkStatus(response) {
-  if (response.status >= 200 && response.status < 300) {
-    return response;
-  }
-  let error = new Error(response.statusText);
-  error.response = response;
-  throw error;
-}
-
 const MSEC_IN_1_SEC = 1000;
 const SEC_IN_1_MIN = 60;
 const MIN_IN_1_HR = 60;
@@ -16,10 +7,6 @@ export function dayDifference(earlierDate, laterDate) {
   return ( new Date(laterDate.split("-")) - new Date(earlierDate.split("-")) )
   / MSEC_IN_1_SEC / SEC_IN_1_MIN / MIN_IN_1_HR / HR_IN_1_DAY
   ;
-}
-
-export function extractJson(response) {
-  return response.json();
 }
 
 export function keys(obj) {

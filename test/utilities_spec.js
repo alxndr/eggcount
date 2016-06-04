@@ -4,23 +4,12 @@ import {expect} from "chai";
 import "mocha";
 
 import {
-  checkStatus,
   dayDifference,
   last,
   range
 } from "../src/utilities";
 
 describe("utilities", function() {
-
-
-  describe("checkStatus", function() {
-    describe("with a non-200 response", function() {
-      it("throws", function() {
-        const response = {status: 404};
-        expect(() => checkStatus(response)).to.throw();
-      });
-    });
-  });
 
 
   describe("dayDifference", function() {
@@ -48,6 +37,7 @@ describe("utilities", function() {
       expect(last([])).to.equal(undefined);
     });
   });
+
 
   describe("range", function() {
     it("returns an array of numbers, inclusive", function() {

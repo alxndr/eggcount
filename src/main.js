@@ -1,10 +1,8 @@
-import { fetchGist } from "./gistApi"
+import { fetchFileInGist } from "./gistApi"
 import plotly from "./plotly";
 import * as html from "./html";
 import {
-  checkStatus,
   dayDifference,
-  extractJson,
   keys,
   last,
   objectKeyValPairs,
@@ -120,8 +118,7 @@ function buildSeparateDataSets(yearAcc, [year, yearData]) {
   yearAcc[year] =
     objectKeyValPairs(yearData)
       .sort(sortByFirstElement)
-      .reduce(buildDateAndCountObjects, emptyCounts())
-    ;
+      .reduce(buildDateAndCountObjects, emptyCounts());
   return yearAcc;
 }
 
@@ -253,14 +250,10 @@ global.showChart = function({gistId, filename}) {
     return false;
   }
   const {newPlot} = global.Plotly;
-  return fetchGist(gistId)
-    .then(({files, html_url}) => {
-      // TODO there should be a split here in the pipeline or something...
-      // (there are two things to do with the result of fetching that gist)
-      html.findId("charts").appendChild(html.createLink({text: "data source", href: html_url}));
-      return fetch(files[filename].raw_url)
-        .then(checkStatus)
-        .then(extractJson);
+  fetchFileInGist(filename, gistId)
+    .then(({fileUrl, data}) => {
+      html.findId("charts").appendChild(html.createLink({text: "data source", href: fileUrl}));
+      return data;
     })
     .then(constructDict)
     .then(calculateAverages) // need to calculate averages only once all data is collected
