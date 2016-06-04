@@ -41,10 +41,10 @@ function runningAverageOverPriorDays(_ref, numDays, dateEntries) {
   var dataToAverage = [];
   while (dateInQuestion <= referenceDate) {
     var year = (dateInQuestion.getYear() + 1900).toString();
-    var month = (0, _utilities.padZero)(dateInQuestion.getMonth() + 1);
+    var _month = (0, _utilities.padZero)(dateInQuestion.getMonth() + 1);
     var day = (0, _utilities.padZero)(dateInQuestion.getDate());
-    if (dateEntries[year] && dateEntries[year][month]) {
-      var dayData = dateEntries[year][month][day];
+    if (dateEntries[year] && dateEntries[year][_month]) {
+      var dayData = dateEntries[year][_month][day];
       if (dayData) {
         dataToAverage.push(dayData.count);
       }
@@ -71,41 +71,48 @@ function storeData(store, count, month, day) {
   return store;
 }
 
-function buildSeparateDataSets(yearAcc, _ref2) {
-  var _ref3 = _slicedToArray(_ref2, 2);
+function buildDateAndCountArrays(monthData) {
+  return (0, _utilities.objectKeyValPairs)(monthData).sort(_utilities.sortByFirstElement).reduce(function (dayAcc, _ref2) {
+    var _ref3 = _slicedToArray(_ref2, 2);
 
-  var year = _ref3[0];
-  var yearData = _ref3[1];
+    var day = _ref3[0];
+    var dayData = _ref3[1];
+    return storeData(dayAcc, dayData.count, month, day);
+  }, newEmptyDataThing());
+}
+
+function buildSeparateDataSets(yearAcc, _ref4) {
+  var _ref5 = _slicedToArray(_ref4, 2);
+
+  var year = _ref5[0];
+  var yearData = _ref5[1];
 
   /* feed through a .reduce(); will return an object shaped like...
      {
-     2014: {
-     dateSeries: [...]
-     rawCount: [...]
-     averages...
-     },
-     ...
+       2014: {
+         dateSeries: [...]
+         rawCount: [...]
+         averages...
+       },
+       ...
      }
    */
-  var transformedYearData = (0, _utilities.objectKeyValPairs)(yearData).sort(_utilities.sortByFirstElement).reduce(function (monthAcc, _ref4) {
-    var _ref5 = _slicedToArray(_ref4, 2);
+  yearAcc[year] = (0, _utilities.objectKeyValPairs)(yearData).sort(_utilities.sortByFirstElement).reduce(function (monthAcc, _ref6) {
+    var _ref7 = _slicedToArray(_ref6, 2);
 
-    var month = _ref5[0];
-    var monthData = _ref5[1];
+    var month = _ref7[0];
+    var monthData = _ref7[1];
 
-    var transformedMonthData = (0, _utilities.objectKeyValPairs)(monthData).sort(_utilities.sortByFirstElement).reduce(function (dayAcc, _ref6) {
-      var _ref7 = _slicedToArray(_ref6, 2);
+    var _buildDateAndCountArr = buildDateAndCountArrays(monthData);
 
-      var day = _ref7[0];
-      var dayData = _ref7[1];
-      return storeData(dayAcc, dayData.count, month, day);
-    }, newEmptyDataThing());
+    var dateSeries = _buildDateAndCountArr.dateSeries;
+    var rawCount = _buildDateAndCountArr.rawCount;
+
     return {
-      dateSeries: monthAcc.dateSeries.concat(transformedMonthData.dateSeries),
-      rawCount: monthAcc.rawCount.concat(transformedMonthData.rawCount)
+      dateSeries: monthAcc.dateSeries.concat(dateSeries),
+      rawCount: monthAcc.rawCount.concat(rawCount)
     };
   }, newEmptyDataThing());
-  yearAcc[year] = transformedYearData;
   return yearAcc;
 }
 

@@ -75,33 +75,37 @@ function storeData(store, count, month, day) {
   return store;
 }
 
+function buildDateAndCountArrays(monthData) {
+  return objectKeyValPairs(monthData)
+    .sort(sortByFirstElement)
+    .reduce(
+      (dayAcc, [day, dayData]) => storeData(dayAcc, dayData.count, month, day),
+      newEmptyDataThing()
+    );
+}
+
 function buildSeparateDataSets(yearAcc, [year, yearData]) {
   /* feed through a .reduce(); will return an object shaped like...
      {
-     2014: {
-     dateSeries: [...]
-     rawCount: [...]
-     averages...
-     },
-     ...
+       2014: {
+         dateSeries: [...]
+         rawCount: [...]
+         averages...
+       },
+       ...
      }
    */
-  const transformedYearData =
+  yearAcc[year] =
     objectKeyValPairs(yearData)
       .sort(sortByFirstElement)
       .reduce((monthAcc, [month, monthData]) => {
-        const transformedMonthData =
-          objectKeyValPairs(monthData)
-            .sort(sortByFirstElement)
-            .reduce((dayAcc, [day, dayData]) => storeData(dayAcc, dayData.count, month, day), newEmptyDataThing())
-          ;
+        const {dateSeries, rawCount} = buildDateAndCountArrays(monthData);
         return {
-          dateSeries: monthAcc.dateSeries.concat(transformedMonthData.dateSeries),
-          rawCount: monthAcc.rawCount.concat(transformedMonthData.rawCount)
+          dateSeries: monthAcc.dateSeries.concat(dateSeries),
+          rawCount: monthAcc.rawCount.concat(rawCount)
         };
       }, newEmptyDataThing())
     ;
-  yearAcc[year] = transformedYearData;
   return yearAcc;
 }
 
