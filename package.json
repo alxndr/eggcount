@@ -4,7 +4,7 @@
   "description": "Visualize how many eggs your chickens are laying. No, really.",
   "main": "main.js",
   "scripts": {
-    "build": "browserify src/*.js --transform [ babelify ] --debug --outfile build/bundle.js && echo built bundle.js",
+    "build": "browserify src/*.js --transform [ babelify ] --outfile build/bundle.js && echo built bundle.js",
     "ci": "npm run lint && npm run test",
     "lint": "eslint --config .eslintrc src/ test/",
     "test": "mocha --require mocha-babel \"test/**/*.js\"",

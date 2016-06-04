@@ -158,6 +158,64 @@ function makeFakeDate(month, day) {
   return new Date(FAKE_YEAR, month - 1, day);
 }
 
+function recordStuff(data, count, month, day) {
+  // need to normalize all dates to same year,
+  // so charting lib places all e.g. Jul 13s in the same X-axis position
+  data.dateSeries.push(makeFakeDate(month, day));
+  data.rawCount.push(count);
+  return data;
+}
+
+function emptyCounts() {
+  return {
+    dateSeries: [],
+    rawCount: []
+  };
+}
+
+function buildDateAndCountObjects(monthAcc, _ref2) {
+  var _ref3 = _slicedToArray(_ref2, 2);
+
+  var month = _ref3[0];
+  var monthData = _ref3[1];
+
+  var _objectKeyValPairs$so = (0, _utilities.objectKeyValPairs)(monthData).sort(_utilities.sortByFirstElement).reduce(function (dayAcc, _ref4) {
+    var _ref5 = _slicedToArray(_ref4, 2);
+
+    var day = _ref5[0];
+    var dayData = _ref5[1];
+    return recordStuff(dayAcc, dayData.count, month, day);
+  }, emptyCounts());
+
+  var dateSeries = _objectKeyValPairs$so.dateSeries;
+  var rawCount = _objectKeyValPairs$so.rawCount;
+
+  return {
+    dateSeries: monthAcc.dateSeries.concat(dateSeries),
+    rawCount: monthAcc.rawCount.concat(rawCount)
+  };
+}
+
+function buildSeparateDataSets(yearAcc, _ref6) {
+  var _ref7 = _slicedToArray(_ref6, 2);
+
+  var year = _ref7[0];
+  var yearData = _ref7[1];
+
+  /* feed through a .reduce(); will return an object shaped like...
+     {
+       2014: {
+         dateSeries: [...]
+         rawCount: [...]
+       averages...
+       },
+       ...
+     }
+   */
+  yearAcc[year] = (0, _utilities.objectKeyValPairs)(yearData).sort(_utilities.sortByFirstElement).reduce(buildDateAndCountObjects, emptyCounts());
+  return yearAcc;
+}
+
 function calculateAverages(entryDictionary) {
   var years = (0, _utilities.keys)(entryDictionary);
   var averages = {};
@@ -230,9 +288,9 @@ function sortInput(a, b) {
 }
 
 function constructDict(data) {
-  var infilledData = data.sort(sortInput).reduce(function (smoothed, _ref2) {
-    var date = _ref2.date;
-    var count = _ref2.count;
+  var infilledData = data.sort(sortInput).reduce(function (smoothed, _ref8) {
+    var date = _ref8.date;
+    var count = _ref8.count;
 
     if (!smoothed.length) {
       // the first measurement. no need to process any further.
@@ -255,9 +313,9 @@ function constructDict(data) {
     }
     return smoothed;
   }, []);
-  return infilledData.reduce(function (entries, _ref3) {
-    var date = _ref3.date;
-    var count = _ref3.count;
+  return infilledData.reduce(function (entries, _ref9) {
+    var date = _ref9.date;
+    var count = _ref9.count;
 
     var _date$split = date.split("-");
 
@@ -278,62 +336,6 @@ function constructDict(data) {
   }, {});
 }
 
-function newEmptyDataThing() {
-  return {
-    dateSeries: [],
-    rawCount: [],
-    avgDays7: [],
-    avgDays28: [],
-    avgDays84: []
-  };
-}
-
-function buildSeparateDataSets(yearAcc, _ref4) {
-  var _ref5 = _slicedToArray(_ref4, 2);
-
-  var year = _ref5[0];
-  var yearData = _ref5[1];
-
-  /* feed through a .reduce(); will return an object shaped like...
-     {
-       2014: {
-         dateSeries: [...]
-         rawCount: [...]
-       averages...
-       },
-       ...
-     }
-   */
-  yearAcc[year] = (0, _utilities.objectKeyValPairs)(yearData).sort(_utilities.sortByFirstElement).reduce(function (monthAcc, _ref6) {
-    var _ref7 = _slicedToArray(_ref6, 2);
-
-    var month = _ref7[0];
-    var monthData = _ref7[1];
-
-    var _objectKeyValPairs$so = (0, _utilities.objectKeyValPairs)(monthData).sort(_utilities.sortByFirstElement).reduce(function (dayAcc, _ref8) {
-      var _ref9 = _slicedToArray(_ref8, 2);
-
-      var day = _ref9[0];
-      var dayData = _ref9[1];
-
-      // need to normalize all dates to same year,
-      // so charting lib places all e.g. Jul 13s in the same X-axis position
-      dayAcc.dateSeries.push(makeFakeDate(month, day));
-      dayAcc.rawCount.push(dayData.count);
-      return dayAcc;
-    }, newEmptyDataThing());
-
-    var dateSeries = _objectKeyValPairs$so.dateSeries;
-    var rawCount = _objectKeyValPairs$so.rawCount;
-
-    return {
-      dateSeries: monthAcc.dateSeries.concat(dateSeries),
-      rawCount: monthAcc.rawCount.concat(rawCount)
-    };
-  }, newEmptyDataThing());
-  return yearAcc;
-}
-
 function buildConfigsForPlotly(_ref10) {
   var rawData = _ref10.rawData;
   var averages = _ref10.averages;
@@ -349,8 +351,6 @@ function buildConfigsForPlotly(_ref10) {
     return dataToChart;
   }, { dataForCollectedChart: [], dataFor7dayChart: [], dataFor28dayChart: [], dataFor84dayChart: [] });
 }
-
-/* console.log("html...", html); */
 
 global.showChart = function (_ref11) {
   var gistId = _ref11.gistId;
@@ -368,7 +368,6 @@ global.showChart = function (_ref11) {
 
     // TODO there should be a split here in the pipeline or something...
     // (there are two things to do with the result of fetching that gist)
-    global.console.log(html);
     html.findId("charts").appendChild(html.createLink({ text: "data source", href: html_url }));
     return fetch(files[filename].raw_url).then(_utilities.checkStatus).then(_utilities.extractJson);
   }).then(constructDict).then(calculateAverages) // need to calculate averages only once all data is collected
@@ -386,8 +385,6 @@ global.showChart = function (_ref11) {
     newPlot("3mo", dataFor84dayChart, _plotly2.default.layout({ title: "3-month rolling average" }), plotlyConfig);
   });
 };
-
-/* console.log(global.showChart); */
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 

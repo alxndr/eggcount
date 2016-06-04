@@ -78,9 +78,32 @@ function makeFakeDate(month, day) {
 }
 
 function recordStuff(data, count, month, day) {
+  // need to normalize all dates to same year,
+  // so charting lib places all e.g. Jul 13s in the same X-axis position
   data.dateSeries.push(makeFakeDate(month, day));
   data.rawCount.push(count);
   return data;
+}
+
+function emptyCounts() {
+  return {
+    dateSeries: [],
+    rawCount: []
+  };
+}
+
+function buildDateAndCountObjects(monthAcc, [month, monthData]) {
+  const {dateSeries, rawCount} =
+    objectKeyValPairs(monthData)
+      .sort(sortByFirstElement)
+      .reduce(
+        (dayAcc, [day, dayData]) => recordStuff(dayAcc, dayData.count, month, day),
+        emptyCounts()
+      );
+  return {
+    dateSeries: monthAcc.dateSeries.concat(dateSeries),
+    rawCount: monthAcc.rawCount.concat(rawCount)
+  };
 }
 
 function buildSeparateDataSets(yearAcc, [year, yearData]) {
@@ -97,33 +120,9 @@ function buildSeparateDataSets(yearAcc, [year, yearData]) {
   yearAcc[year] =
     objectKeyValPairs(yearData)
       .sort(sortByFirstElement)
-      .reduce((monthAcc, [month, monthData]) => {
-        const {dateSeries, rawCount} =
-          objectKeyValPairs(monthData)
-            .sort(sortByFirstElement)
-            .reduce((dayAcc, [day, dayData]) => {
-              // need to normalize all dates to same year,
-              // so charting lib places all e.g. Jul 13s in the same X-axis position
-              return recordStuff(dayAcc, dayData.count, month, day);
-            }, newEmptyDataThing())
-          ;
-        return {
-          dateSeries: monthAcc.dateSeries.concat(dateSeries),
-          rawCount: monthAcc.rawCount.concat(rawCount)
-        };
-      }, newEmptyDataThing())
+      .reduce(buildDateAndCountObjects, emptyCounts())
     ;
   return yearAcc;
-}
-
-function newEmptyDataThing() {
-  return {
-    dateSeries: [],
-    rawCount: [],
-    avgDays7: [],
-    avgDays28: [],
-    avgDays84: []
-  };
 }
 
 function calculateAverages(entryDictionary) {
