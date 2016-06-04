@@ -4,8 +4,22 @@ import {expect} from "chai";
 import "mocha";
 
 import {
-  dayDifference
+  checkStatus,
+  dayDifference,
+  last,
+  range
 } from "../src/utilities.js";
+
+
+describe("checkStatus", function() {
+  describe("with a non-200 response", function() {
+    it("throws", function() {
+      const response = {status: 404};
+      expect(() => checkStatus(response)).to.throw();
+    });
+  });
+});
+
 
 describe("dayDifference", function() {
   describe("1 day apart", function() {
@@ -23,4 +37,21 @@ describe("dayDifference", function() {
       });
     });
   })
+});
+
+
+describe("last", function() {
+  it("returns the last item of an array", function() {
+    expect(last([1, 2, 3])).to.equal(3);
+    expect(last([])).to.equal(undefined);
+  });
+});
+
+describe("range", function() {
+  it("returns an array of numbers, inclusive", function() {
+    const result = range(1, 4);
+    expect(result).to.be.an("array");
+    expect(result).to.include(1);
+    expect(result).to.include(4);
+  });
 });
