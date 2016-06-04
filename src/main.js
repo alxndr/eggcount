@@ -75,13 +75,21 @@ function storeData(store, count, month, day) {
   return store;
 }
 
-function buildDateAndCountArrays(monthData) {
+function buildDateAndCountArrays(month, monthData) {
   return objectKeyValPairs(monthData)
     .sort(sortByFirstElement)
     .reduce(
       (dayAcc, [day, dayData]) => storeData(dayAcc, dayData.count, month, day),
       newEmptyDataThing()
     );
+}
+
+function buildDateAndCountObject(monthAcc, [month, monthData]) {
+  const {dateSeries, rawCount} = buildDateAndCountArrays(month, monthData);
+  return {
+    dateSeries: monthAcc.dateSeries.concat(dateSeries),
+    rawCount: monthAcc.rawCount.concat(rawCount)
+  };
 }
 
 function buildSeparateDataSets(yearAcc, [year, yearData]) {
@@ -98,14 +106,7 @@ function buildSeparateDataSets(yearAcc, [year, yearData]) {
   yearAcc[year] =
     objectKeyValPairs(yearData)
       .sort(sortByFirstElement)
-      .reduce((monthAcc, [month, monthData]) => {
-        const {dateSeries, rawCount} = buildDateAndCountArrays(monthData);
-        return {
-          dateSeries: monthAcc.dateSeries.concat(dateSeries),
-          rawCount: monthAcc.rawCount.concat(rawCount)
-        };
-      }, newEmptyDataThing())
-    ;
+      .reduce(buildDateAndCountObject, newEmptyDataThing());
   return yearAcc;
 }
 
