@@ -91,10 +91,10 @@ function buildSeparateDataSets(yearAcc, [year, yearData]) {
       .sort(sortByFirstElement)
       .reduce((monthAcc, [month, monthData]) => {
         const transformedMonthData =
-        objectKeyValPairs(monthData)
-          .sort(sortByFirstElement)
-          .reduce((dayAcc, [day, dayData]) => storeData(dayAcc, dayData.count, month, day), newEmptyDataThing())
-        ;
+          objectKeyValPairs(monthData)
+            .sort(sortByFirstElement)
+            .reduce((dayAcc, [day, dayData]) => storeData(dayAcc, dayData.count, month, day), newEmptyDataThing())
+          ;
         return {
           dateSeries: monthAcc.dateSeries.concat(transformedMonthData.dateSeries),
           rawCount: monthAcc.rawCount.concat(transformedMonthData.rawCount)
