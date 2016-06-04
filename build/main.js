@@ -2,24 +2,18 @@
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-var _require = require("./utilities.js");
+var _gistApi = require("./gistApi");
 
-var checkStatus = _require.checkStatus;
-var dayDifference = _require.dayDifference;
-var extractJson = _require.extractJson;
-var keys = _require.keys;
-var last = _require.last;
-var objectKeyValPairs = _require.objectKeyValPairs;
-var padZero = _require.padZero;
-var range = _require.range;
-var sortByFirstElement = _require.sortByFirstElement;
-var sum = _require.sum;
+var _gistApi2 = _interopRequireDefault(_gistApi);
 
+var _utilities = require("./utilities");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function dateOfFirstEntry(dateEntries) {
-  var firstYear = keys(dateEntries)[0];
-  var firstMonth = keys(dateEntries[firstYear])[0];
-  var firstDay = keys(dateEntries[firstYear][firstMonth])[0];
+  var firstYear = (0, _utilities.keys)(dateEntries)[0];
+  var firstMonth = (0, _utilities.keys)(dateEntries[firstYear])[0];
+  var firstDay = (0, _utilities.keys)(dateEntries[firstYear][firstMonth])[0];
   var d = new Date(firstYear, firstMonth - 1, firstDay);
   d.setHours(1); // so other calculations of this date will be before...
   return d;
@@ -47,8 +41,8 @@ function runningAverageOverPriorDays(_ref, numDays, dateEntries) {
   var dataToAverage = [];
   while (dateInQuestion <= referenceDate) {
     var year = (dateInQuestion.getYear() + 1900).toString();
-    var month = padZero(dateInQuestion.getMonth() + 1);
-    var day = padZero(dateInQuestion.getDate());
+    var month = (0, _utilities.padZero)(dateInQuestion.getMonth() + 1);
+    var day = (0, _utilities.padZero)(dateInQuestion.getDate());
     if (dateEntries[year] && dateEntries[year][month]) {
       var dayData = dateEntries[year][month][day];
       if (dayData) {
@@ -61,7 +55,7 @@ function runningAverageOverPriorDays(_ref, numDays, dateEntries) {
   if (dataToAverage.length === 0) {
     return null;
   }
-  return dataToAverage.reduce(sum) / numDays;
+  return dataToAverage.reduce(_utilities.sum) / numDays;
 }
 
 var FAKE_YEAR = 1970;
@@ -85,13 +79,13 @@ function buildSeparateDataSets(yearAcc, _ref2) {
      ...
      }
    */
-  var transformedYearData = objectKeyValPairs(yearData).sort(sortByFirstElement).reduce(function (monthAcc, _ref4) {
+  var transformedYearData = (0, _utilities.objectKeyValPairs)(yearData).sort(_utilities.sortByFirstElement).reduce(function (monthAcc, _ref4) {
     var _ref5 = _slicedToArray(_ref4, 2);
 
     var month = _ref5[0];
     var monthData = _ref5[1];
 
-    var transformedMonthData = objectKeyValPairs(monthData).sort(sortByFirstElement).reduce(function (dayAcc, _ref6) {
+    var transformedMonthData = (0, _utilities.objectKeyValPairs)(monthData).sort(_utilities.sortByFirstElement).reduce(function (dayAcc, _ref6) {
       var _ref7 = _slicedToArray(_ref6, 2);
 
       var day = _ref7[0];
@@ -123,13 +117,13 @@ function newEmptyDataThing() {
 }
 
 function calculateAverages(entryDictionary) {
-  var years = keys(entryDictionary);
+  var years = (0, _utilities.keys)(entryDictionary);
   var averages = {};
 
   // iterates through all days between first and last data points, and
   // calculates a bunch of numbers, and
   // mutates the `averages` object, filling it up with the numbers.
-  range(parseInt(years[0]), parseInt(years.slice(-1)[0])).map(function (yearInt) {
+  (0, _utilities.range)(parseInt(years[0]), parseInt(years.slice(-1)[0])).map(function (yearInt) {
     var year = yearInt.toString();
     if (!entryDictionary[year]) {
       return;
@@ -139,18 +133,18 @@ function calculateAverages(entryDictionary) {
     averages[year].avgDays7 = [];
     averages[year].avgDays28 = [];
     averages[year].avgDays84 = [];
-    range(1, 12).map(function (monthInt) {
-      var month = padZero(monthInt); // entry dictionary has zero-padded string as keys
+    (0, _utilities.range)(1, 12).map(function (monthInt) {
+      var month = (0, _utilities.padZero)(monthInt); // entry dictionary has zero-padded string as keys
       if (!entryDictionary[year][month]) {
         return;
       }
-      range(1, 31).map(function (dayInt) {
+      (0, _utilities.range)(1, 31).map(function (dayInt) {
         var date = new Date(yearInt, monthInt - 1, dayInt);
         if (date.getDate() !== dayInt) {
           return; // we auto-generated an invalid date, e.g. feb 31st
         }
         // TODO return if we're past the last date or before the first date
-        var day = padZero(dayInt); // entry dictionary has zero-padded string as keys
+        var day = (0, _utilities.padZero)(dayInt); // entry dictionary has zero-padded string as keys
         if (!averages[year][month]) {
           averages[year][month] = {};
         }
@@ -248,8 +242,8 @@ function constructDict(data) {
       smoothed.push({ date: date, count: count });
       return smoothed;
     }
-    var lastMeasurement = last(smoothed);
-    var difference = dayDifference(lastMeasurement.date, date);
+    var lastMeasurement = (0, _utilities.last)(smoothed);
+    var difference = (0, _utilities.dayDifference)(lastMeasurement.date, date);
     if (difference <= 1) {
       smoothed.push({ date: date, count: count });
     } else {
@@ -295,21 +289,21 @@ global.showChart = function (_ref10) {
     die();
     return false;
   }
-  return fetch("https://api.github.com/gists/" + gistId).then(checkStatus).then(extractJson).then(function (_ref11) {
+  return (0, _gistApi2.default)(gistId).then(function (_ref11) {
     var files = _ref11.files;
     var html_url = _ref11.html_url;
 
     appendLink(html_url);
     return fetch(files[filename].raw_url);
-  }).then(checkStatus).then(extractJson).then(constructDict).then(function (data) {
+  }).then(_utilities.checkStatus).then(_utilities.extractJson).then(constructDict).then(function (data) {
     return calculateAverages(data);
   }) // need to calculate averages only once all data is collected
   .then(function (_ref12) {
     var rawData = _ref12.rawData;
     var averages = _ref12.averages;
 
-    var transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
-    var years = keys(transformedData);
+    var transformedData = (0, _utilities.objectKeyValPairs)(rawData).reduce(buildSeparateDataSets, {});
+    var years = (0, _utilities.keys)(transformedData);
     var boundExtractData = bindExtractData(transformedData);
 
     // TODO only years.map() once; map each year's data to the transformations it needs...

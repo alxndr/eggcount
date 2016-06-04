@@ -1,4 +1,5 @@
-const {
+import fetchGist from "./gistApi"
+import {
   checkStatus,
   dayDifference,
   extractJson,
@@ -9,7 +10,7 @@ const {
   range,
   sortByFirstElement,
   sum
-} = require("./utilities.js");
+} from "./utilities";
 
 function dateOfFirstEntry(dateEntries) {
   const firstYear = keys(dateEntries)[0];
@@ -271,9 +272,7 @@ global.showChart = function({gistId, filename}) {
     die();
     return false;
   }
-  return fetch(`https://api.github.com/gists/${gistId}`)
-    .then(checkStatus)
-    .then(extractJson)
+  return fetchGist(gistId)
     .then(({files, html_url}) => {
       appendLink(html_url);
       return fetch(files[filename].raw_url);
