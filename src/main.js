@@ -2,16 +2,18 @@ import { fetchFileInGist } from "./gistApi"
 import plotly from "./plotly";
 import * as html from "./html";
 import {
-  dayDifference,
   keys,
   last,
   objectKeyValPairs,
   padZero,
   range,
   sortByFirstElement,
-  sum,
-  ymdFromDate
+  sum
 } from "./utilities";
+import {
+  dayDifference,
+  ymdFromDate
+} from "./dates";
 
 function die() {
   console.error("Uh oh! Expected Plotly to be globally available.");
