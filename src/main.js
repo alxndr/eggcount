@@ -1,6 +1,3 @@
-const GIST_ID = "c5cb1b4ceaf938d8801b60fd241fabf9";
-const GIST_FILENAME = "eggcount.json";
-
 const {
   checkStatus,
   dayDifference,
@@ -269,17 +266,17 @@ function constructDict(data) {
   }, {});
 }
 
-global.showChart = function() {
+global.showChart = function({gistId, filename}) {
   if (!global.Plotly) {
     die();
     return false;
   }
-  return fetch(`https://api.github.com/gists/${GIST_ID}`)
+  return fetch(`https://api.github.com/gists/${gistId}`)
     .then(checkStatus)
     .then(extractJson)
     .then(({files, html_url}) => {
       appendLink(html_url);
-      return fetch(files[GIST_FILENAME].raw_url);
+      return fetch(files[filename].raw_url);
     })
     .then(checkStatus)
     .then(extractJson)

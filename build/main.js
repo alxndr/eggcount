@@ -2,9 +2,6 @@
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-var GIST_ID = "c5cb1b4ceaf938d8801b60fd241fabf9";
-var GIST_FILENAME = "eggcount.json";
-
 var _require = require("./utilities.js");
 
 var checkStatus = _require.checkStatus;
@@ -290,23 +287,26 @@ function constructDict(data) {
   }, {});
 }
 
-global.showChart = function () {
+global.showChart = function (_ref10) {
+  var gistId = _ref10.gistId;
+  var filename = _ref10.filename;
+
   if (!global.Plotly) {
     die();
     return false;
   }
-  return fetch("https://api.github.com/gists/" + GIST_ID).then(checkStatus).then(extractJson).then(function (_ref10) {
-    var files = _ref10.files;
-    var html_url = _ref10.html_url;
+  return fetch("https://api.github.com/gists/" + gistId).then(checkStatus).then(extractJson).then(function (_ref11) {
+    var files = _ref11.files;
+    var html_url = _ref11.html_url;
 
     appendLink(html_url);
-    return fetch(files[GIST_FILENAME].raw_url);
+    return fetch(files[filename].raw_url);
   }).then(checkStatus).then(extractJson).then(constructDict).then(function (data) {
     return calculateAverages(data);
   }) // need to calculate averages only once all data is collected
-  .then(function (_ref11) {
-    var rawData = _ref11.rawData;
-    var averages = _ref11.averages;
+  .then(function (_ref12) {
+    var rawData = _ref12.rawData;
+    var averages = _ref12.averages;
 
     var transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
     var years = keys(transformedData);
@@ -349,11 +349,11 @@ global.showChart = function () {
     }];
   }).then(function (configsForPlotly) {
     removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
-    configsForPlotly.map(function (_ref12) {
-      var domId = _ref12.domId;
-      var data = _ref12.data;
-      var layout = _ref12.layout;
-      var config = _ref12.config;
+    configsForPlotly.map(function (_ref13) {
+      var domId = _ref13.domId;
+      var data = _ref13.data;
+      var layout = _ref13.layout;
+      var config = _ref13.config;
       return global.Plotly.newPlot(domId, data, layout, config);
     });
   }); // fetch pipeline
