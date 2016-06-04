@@ -1,14 +1,16 @@
-import fetchGist from "./gistApi"
+import { fetchGist } from "./gistApi"
 import plotly from "./plotly";
-import html from "./html";
+import * as html from "./html";
 import {
   checkStatus,
   dayDifference,
   extractJson,
   keys,
   last,
+  objectKeyValPairs,
   padZero,
   range,
+  sortByFirstElement,
   sum,
   ymdFromDate
 } from "./utilities";
@@ -73,6 +75,55 @@ function runningAverageOverPriorDays(
 const FAKE_YEAR = 1970;
 function makeFakeDate(month, day) {
   return new Date(FAKE_YEAR, month-1, day);
+}
+
+function recordStuff(data, count, month, day) {
+  data.dateSeries.push(makeFakeDate(month, day));
+  data.rawCount.push(count);
+  return data;
+}
+
+function buildSeparateDataSets(yearAcc, [year, yearData]) {
+  /* feed through a .reduce(); will return an object shaped like...
+     {
+       2014: {
+         dateSeries: [...]
+         rawCount: [...]
+       averages...
+       },
+       ...
+     }
+   */
+  yearAcc[year] =
+    objectKeyValPairs(yearData)
+      .sort(sortByFirstElement)
+      .reduce((monthAcc, [month, monthData]) => {
+        const {dateSeries, rawCount} =
+          objectKeyValPairs(monthData)
+            .sort(sortByFirstElement)
+            .reduce((dayAcc, [day, dayData]) => {
+              // need to normalize all dates to same year,
+              // so charting lib places all e.g. Jul 13s in the same X-axis position
+              return recordStuff(dayAcc, dayData.count, month, day);
+            }, newEmptyDataThing())
+          ;
+        return {
+          dateSeries: monthAcc.dateSeries.concat(dateSeries),
+          rawCount: monthAcc.rawCount.concat(rawCount)
+        };
+      }, newEmptyDataThing())
+    ;
+  return yearAcc;
+}
+
+function newEmptyDataThing() {
+  return {
+    dateSeries: [],
+    rawCount: [],
+    avgDays7: [],
+    avgDays28: [],
+    avgDays84: []
+  };
 }
 
 function calculateAverages(entryDictionary) {
@@ -182,11 +233,12 @@ function constructDict(data) {
 }
 
 function buildConfigsForPlotly({rawData, averages}) {
+  const transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
   return keys(rawData).reduce(
     (dataToChart, year) => {
       const countChartOptions = { mode: "markers", opacity: 0.3, marker: { size: 15 } };
       const averagesChartsOptions = { mode: "line" };
-      dataToChart.dataForCollectedChart.push(extractData(year, "rawCount", rawData, countChartOptions));
+      dataToChart.dataForCollectedChart.push(extractData(year, "rawCount", transformedData, countChartOptions));
       dataToChart.dataFor7dayChart.push(extractData(year, "avgDays7", averages, averagesChartsOptions));
       dataToChart.dataFor28dayChart.push(extractData(year, "avgDays28", averages, averagesChartsOptions));
       dataToChart.dataFor84dayChart.push(extractData(year, "avgDays84", averages, averagesChartsOptions));
@@ -207,10 +259,10 @@ global.showChart = function({gistId, filename}) {
       // TODO there should be a split here in the pipeline or something...
       // (there are two things to do with the result of fetching that gist)
       html.findId("charts").appendChild(html.createLink({text: "data source", href: html_url}));
-      return fetch(files[filename].raw_url);
+      return fetch(files[filename].raw_url)
+        .then(checkStatus)
+        .then(extractJson);
     })
-    .then(checkStatus)
-    .then(extractJson)
     .then(constructDict)
     .then(calculateAverages) // need to calculate averages only once all data is collected
     .then(buildConfigsForPlotly)

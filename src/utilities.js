@@ -31,12 +31,26 @@ export function last(array) {
   return array.slice(-1)[0];
 }
 
+export function objectKeyValPairs(obj) {
+  return keys(obj).map((key) => [key, obj[key]]);
+}
+
 export function padZero(thing, length = 2) {
   let string = thing.toString();
   while (string.length < length) {
     string = `0${string}`;
   }
   return string;
+}
+
+export function sortByFirstElement([a], [b]) {
+  if (a < b) {
+    return -1;
+  }
+  if (a > b) {
+    return 1;
+  }
+  return 0;
 }
 
 export function sum(sum, n) {

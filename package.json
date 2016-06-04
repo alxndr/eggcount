@@ -4,7 +4,7 @@
   "description": "Visualize how many eggs your chickens are laying. No, really.",
   "main": "main.js",
   "scripts": {
-    "build": "babel src -d build",
+    "build": "browserify src/*.js --transform [ babelify ] --debug --outfile build/bundle.js && echo built bundle.js",
     "ci": "npm run lint && npm run test",
     "lint": "eslint --config .eslintrc src/ test/",
     "test": "mocha --require mocha-babel \"test/**/*.js\"",
@@ -12,11 +12,16 @@
   },
   "watch": {
     "build": {
-      "patterns": ["src"],
+      "patterns": [
+        "src"
+      ],
       "quiet": true
     },
     "ci": {
-      "patterns": ["src", "test"],
+      "patterns": [
+        "src",
+        "test"
+      ],
       "quiet": true
     }
   },
@@ -45,6 +50,8 @@
     "babel-cli": "^6.9.0",
     "babel-eslint": "^6.0.4",
     "babel-preset-es2015": "^6.9.0",
+    "babelify": "^7.3.0",
+    "browserify": "^13.0.1",
     "chai": "^3.5.0",
     "eslint": "^2.10.2",
     "mocha": "^2.5.3",

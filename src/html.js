@@ -1,5 +1,5 @@
 function createElement(elementName) {
-  return global.createElement(elementName);
+  return document.createElement(elementName);
 }
 
 export function createLink({href, text}) {
@@ -16,14 +16,14 @@ export function createP(text) {
 }
 
 function createText(text) {
-  return global.createTextNode(text);
+  return document.createTextNode(text);
 }
 
 export function findId(elementId) {
-  return global.getElementById(elementId);
+  return document.getElementById(elementId);
 }
 
-export function insertBefore(container, newElement) {
+export function insertFirst(container, newElement) {
   const firstChild = container.firstChild;
   container.insertBefore(newElement, firstChild);
 }
