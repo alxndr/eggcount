@@ -317,32 +317,10 @@ global.showChart = function (_ref11) {
     var dataFor84dayChart = configsForPlotly.dataFor84dayChart;
 
     removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
-    [{
-      domId: "raw",
-      data: dataForCollectedChart,
-      layout: plotLayout({ title: "eggs collected per day" }),
-      config: { displayModeBar: false }
-    }, {
-      domId: "1wk",
-      data: dataFor7dayChart,
-      layout: plotLayout({ title: "1-week rolling average" }),
-      config: { displayModeBar: false }
-    }, {
-      domId: "1mo",
-      data: dataFor28dayChart,
-      layout: plotLayout({ title: "1-month rolling average" }),
-      config: { displayModeBar: false }
-    }, {
-      domId: "3mo",
-      data: dataFor84dayChart,
-      layout: plotLayout({ title: "3-month rolling average" }),
-      config: { displayModeBar: false }
-    }].map(function (_ref13) {
-      var domId = _ref13.domId;
-      var data = _ref13.data;
-      var layout = _ref13.layout;
-      var config = _ref13.config;
-      return global.Plotly.newPlot(domId, data, layout, config);
-    });
+    var plotlyConfig = { displayModeBar: false };
+    global.Plotly.newPlot("raw", dataForCollectedChart, plotLayout({ title: "eggs collected per day" }), plotlyConfig);
+    global.Plotly.newPlot("1wk", dataFor7dayChart, plotLayout({ title: "1-week rolling average" }), plotlyConfig);
+    global.Plotly.newPlot("1mo", dataFor28dayChart, plotLayout({ title: "1-month rolling average" }), plotlyConfig);
+    global.Plotly.newPlot("3mo", dataFor84dayChart, plotLayout({ title: "3-month rolling average" }), plotlyConfig);
   }); // fetch pipeline
 };
