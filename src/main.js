@@ -67,6 +67,14 @@ function makeFakeDate(month, day) {
   return new Date(FAKE_YEAR, month-1, day);
 }
 
+function storeData(store, count, month, day) {
+  // need to normalize all dates to same year,
+  // so charting lib places all e.g. Jul 13s in the same X-axis position
+  store.dateSeries.push(makeFakeDate(month, day));
+  store.rawCount.push(count);
+  return store;
+}
+
 function buildSeparateDataSets(yearAcc, [year, yearData]) {
   /* feed through a .reduce(); will return an object shaped like...
      {
@@ -85,13 +93,7 @@ function buildSeparateDataSets(yearAcc, [year, yearData]) {
         const transformedMonthData =
         objectKeyValPairs(monthData)
           .sort(sortByFirstElement)
-          .reduce((dayAcc, [day, dayData]) => {
-            // need to normalize all dates to same year,
-            // so charting lib places all e.g. Jul 13s in the same X-axis position
-            dayAcc.dateSeries.push(makeFakeDate(month, day));
-            dayAcc.rawCount.push(dayData.count);
-            return dayAcc;
-          }, newEmptyDataThing())
+          .reduce((dayAcc, [day, dayData]) => storeData(dayAcc, dayData.count, month, day), newEmptyDataThing())
         ;
         return {
           dateSeries: monthAcc.dateSeries.concat(transformedMonthData.dateSeries),
@@ -106,10 +108,7 @@ function buildSeparateDataSets(yearAcc, [year, yearData]) {
 function newEmptyDataThing() {
   return {
     dateSeries: [],
-    rawCount: [],
-    avgDays7: [],
-    avgDays28: [],
-    avgDays84: []
+    rawCount: []
   };
 }
 
@@ -309,7 +308,7 @@ global.showChart = function({gistId, filename}) {
     .then(checkStatus)
     .then(extractJson)
     .then(constructDict)
-    .then((data) => calculateAverages(data)) // need to calculate averages only once all data is collected
+    .then(calculateAverages) // need to calculate averages only once all data is collected
     .then(buildConfigsForPlotly)
     .then((configsForPlotly) => {
       removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));

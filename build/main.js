@@ -63,6 +63,14 @@ function makeFakeDate(month, day) {
   return new Date(FAKE_YEAR, month - 1, day);
 }
 
+function storeData(store, count, month, day) {
+  // need to normalize all dates to same year,
+  // so charting lib places all e.g. Jul 13s in the same X-axis position
+  store.dateSeries.push(makeFakeDate(month, day));
+  store.rawCount.push(count);
+  return store;
+}
+
 function buildSeparateDataSets(yearAcc, _ref2) {
   var _ref3 = _slicedToArray(_ref2, 2);
 
@@ -90,12 +98,7 @@ function buildSeparateDataSets(yearAcc, _ref2) {
 
       var day = _ref7[0];
       var dayData = _ref7[1];
-
-      // need to normalize all dates to same year,
-      // so charting lib places all e.g. Jul 13s in the same X-axis position
-      dayAcc.dateSeries.push(makeFakeDate(month, day));
-      dayAcc.rawCount.push(dayData.count);
-      return dayAcc;
+      return storeData(dayAcc, dayData.count, month, day);
     }, newEmptyDataThing());
     return {
       dateSeries: monthAcc.dateSeries.concat(transformedMonthData.dateSeries),
@@ -109,10 +112,7 @@ function buildSeparateDataSets(yearAcc, _ref2) {
 function newEmptyDataThing() {
   return {
     dateSeries: [],
-    rawCount: [],
-    avgDays7: [],
-    avgDays28: [],
-    avgDays84: []
+    rawCount: []
   };
 }
 
@@ -335,9 +335,7 @@ global.showChart = function (_ref11) {
 
     appendLink(html_url);
     return fetch(files[filename].raw_url);
-  }).then(_utilities.checkStatus).then(_utilities.extractJson).then(constructDict).then(function (data) {
-    return calculateAverages(data);
-  }) // need to calculate averages only once all data is collected
+  }).then(_utilities.checkStatus).then(_utilities.extractJson).then(constructDict).then(calculateAverages) // need to calculate averages only once all data is collected
   .then(buildConfigsForPlotly).then(function (configsForPlotly) {
     removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
     configsForPlotly.map(function (_ref13) {
