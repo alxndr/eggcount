@@ -11,6 +11,11 @@ export function dayDifference(earlierDate, laterDate) {
   ;
 }
 
+const FAKE_YEAR = 1970;
+export function makeFakeDate(month, day) {
+  return new Date(FAKE_YEAR, month-1, day);
+}
+
 export function ymdFromDate(date) {
   return [
     date.getYear() + 1900,

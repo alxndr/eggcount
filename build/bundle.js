@@ -2359,6 +2359,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.dayDifference = dayDifference;
+exports.makeFakeDate = makeFakeDate;
 exports.ymdFromDate = ymdFromDate;
 
 var _strings = require("./strings");
@@ -2370,6 +2371,11 @@ var HR_IN_1_DAY = 24;
 function dayDifference(earlierDate, laterDate) {
   // params are strings of yyyy-mm-dd
   return (new Date(laterDate.split("-")) - new Date(earlierDate.split("-"))) / MSEC_IN_1_SEC / SEC_IN_1_MIN / MIN_IN_1_HR / HR_IN_1_DAY;
+}
+
+var FAKE_YEAR = 1970;
+function makeFakeDate(month, day) {
+  return new Date(FAKE_YEAR, month - 1, day);
 }
 
 function ymdFromDate(date) {
@@ -2617,15 +2623,10 @@ function runningAverageOverPriorDays(_ref, numDays, dateEntries) {
   }) / numDays;
 }
 
-var FAKE_YEAR = 1970;
-function makeFakeDate(month, day) {
-  return new Date(FAKE_YEAR, month - 1, day);
-}
-
 function recordStuff(data, count, month, day) {
   // need to normalize all dates to same year,
   // so charting lib places all e.g. Jul 13s in the same X-axis position
-  data.dateSeries.push(makeFakeDate(month, day));
+  data.dateSeries.push(dates.makeFakeDate(month, day));
   data.rawCount.push(count);
   return data;
 }
@@ -2716,7 +2717,7 @@ function calculateAverages(entryDictionary) {
         if (days7 !== null) {
           var days28 = runningAverageOverPriorDays({ year: year, month: month, day: day }, 28, entryDictionary);
           var days84 = runningAverageOverPriorDays({ year: year, month: month, day: day }, 84, entryDictionary);
-          var fakeDate = makeFakeDate(month, day);
+          var fakeDate = dates.makeFakeDate(month, day);
           averages[year].dateSeries.push(fakeDate);
           averages[year].avgDays7.push(days7);
           averages[year].avgDays28.push(days28);

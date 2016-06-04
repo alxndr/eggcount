@@ -63,15 +63,10 @@ function runningAverageOverPriorDays(
   return dataToAverage.reduce((sum, n) => sum + n) / numDays;
 }
 
-const FAKE_YEAR = 1970;
-function makeFakeDate(month, day) {
-  return new Date(FAKE_YEAR, month-1, day);
-}
-
 function recordStuff(data, count, month, day) {
   // need to normalize all dates to same year,
   // so charting lib places all e.g. Jul 13s in the same X-axis position
-  data.dateSeries.push(makeFakeDate(month, day));
+  data.dateSeries.push(dates.makeFakeDate(month, day));
   data.rawCount.push(count);
   return data;
 }
@@ -151,7 +146,7 @@ function calculateAverages(entryDictionary) {
         if (days7 !== null) {
           const days28 = runningAverageOverPriorDays({year, month, day}, 28, entryDictionary);
           const days84 = runningAverageOverPriorDays({year, month, day}, 84, entryDictionary);
-          const fakeDate = makeFakeDate(month, day);
+          const fakeDate = dates.makeFakeDate(month, day);
           averages[year].dateSeries.push(fakeDate);
           averages[year].avgDays7.push(days7);
           averages[year].avgDays28.push(days28);
