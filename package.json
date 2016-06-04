@@ -4,8 +4,17 @@
   "description": "Visualize how many eggs your chickens are laying. No, really.",
   "main": "main.js",
   "scripts": {
-    "lint": "eslint --config .eslintrc main.js",
-    "test": "echo No tests\\! && exit 1"
+    "build": "babel src -d build",
+    "ci": "npm run lint && npm run test",
+    "lint": "eslint --config .eslintrc src/ test/",
+    "test": "mocha --require mocha-babel \"test/**/*.js\"",
+    "watch": "npm-watch"
+  },
+  "watch": {
+    "ci": {
+      "patterns": ["src", "test"],
+      "quiet": true
+    }
   },
   "repository": {
     "type": "git",
@@ -23,8 +32,18 @@
     "time series graphs",
     "data visualization"
   ],
+  "babel": {
+    "presets": [
+      "es2015"
+    ]
+  },
   "devDependencies": {
+    "babel-cli": "^6.9.0",
     "babel-eslint": "^6.0.4",
-    "eslint": "^2.10.2"
+    "babel-preset-es2015": "^6.9.0",
+    "chai": "^3.5.0",
+    "eslint": "^2.10.2",
+    "mocha": "^2.5.3",
+    "npm-watch": "git://github.com/alxndr/npm-watch.git#quiet"
   }
 }
