@@ -96,7 +96,7 @@ function buildSeparateDataSets(yearAcc, [year, yearData]) {
         ;
         return {
           dateSeries: monthAcc.dateSeries.concat(transformedMonthData.dateSeries),
-          rawCount: monthAcc.rawCount.concat(transformedMonthData.rawCount),
+          rawCount: monthAcc.rawCount.concat(transformedMonthData.rawCount)
         };
       }, newEmptyDataThing())
     ;
@@ -110,7 +110,7 @@ function newEmptyDataThing() {
     rawCount: [],
     avgDays7: [],
     avgDays28: [],
-    avgDays84: [],
+    avgDays84: []
   };
 }
 
@@ -171,7 +171,7 @@ function extractData(year, measure, data, opts) {
     name: year.toString(),
     type: "scatter",
     x: data[year].dateSeries,
-    y: data[year][measure],
+    y: data[year][measure]
   };
   return Object.assign(defaults, opts);
 }
@@ -186,10 +186,10 @@ function plotLayout(opts) {
   return Object.assign({
     type: "date",
     xaxis: {
-      tickformat: "%b %d",
+      tickformat: "%b %d"
     },
     yaxis: {
-    },
+    }
   }, opts);
 }
 
@@ -322,7 +322,7 @@ global.showChart = function() {
           data: years.map((year) => extractData(year, "avgDays84", averages, { mode: "line" })),
           layout: plotLayout({title: "3-month rolling average"}),
           config: {displayModeBar: false}
-        },
+        }
       ];
     })
     .then((configsForPlotly) => {
