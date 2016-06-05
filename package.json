@@ -1,13 +1,14 @@
 {
   "name": "eggcount",
-  "version": "2.0.0",
-  "description": "Visualize how many eggs your chickens are laying. No, really.",
+  "version": "2.0.1-beta",
+  "description": "Visualize how many eggs your chickens are laying. (Yes, really.)",
   "main": "main.js",
   "scripts": {
     "build": "browserify src/*.js --debug --transform [ babelify ] --plugin [minifyify --map build/bundle.js.map --output build/bundle.js.map ] --outfile build/bundle.js && echo built bundle.js",
-    "ci": "npm run lint && npm run test",
+    "ci": "npm run lint && npm run coverage",
+    "coverage": "istanbul cover ./node_modules/.bin/_mocha -- --compilers js:babel-core/register --check-leaks \"test/**/*.js\"",
     "lint": "eslint --config .eslintrc src/ test/",
-    "test": "mocha --compilers js:babel-core/register --check-leaks \"test/**/*.js\"",
+    "test":                                         "mocha    --compilers js:babel-core/register --check-leaks \"test/**/*.js\"",
     "watch": "npm-watch"
   },
   "watch": {
@@ -62,6 +63,7 @@
     "browserify": "^13.0.1",
     "chai": "^3.5.0",
     "eslint": "^2.10.2",
+    "istanbul": "^1.0.0-alpha.2",
     "minifyify": "^7.3.3",
     "mocha": "^2.5.3",
     "npm-watch": "git://github.com/alxndr/npm-watch.git#quiet"
