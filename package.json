@@ -4,7 +4,7 @@
   "description": "Visualize how many eggs your chickens are laying. No, really.",
   "main": "main.js",
   "scripts": {
-    "build": "browserify src/*.js --transform [ babelify ] --outfile build/bundle.js && echo built bundle.js",
+    "build": "browserify src/*.js --debug --transform [ babelify ] --plugin [minifyify --map build/bundle.js.map --output build/bundle.js.map ] --outfile build/bundle.js && echo built bundle.js",
     "ci": "npm run lint && npm run test",
     "lint": "eslint --config .eslintrc src/ test/",
     "test": "mocha --require mocha-babel \"test/**/*.js\"",
@@ -62,6 +62,7 @@
     "browserify": "^13.0.1",
     "chai": "^3.5.0",
     "eslint": "^2.10.2",
+    "minifyify": "^7.3.3",
     "mocha": "^2.5.3",
     "npm-watch": "git://github.com/alxndr/npm-watch.git#quiet"
   }
