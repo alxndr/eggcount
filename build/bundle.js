@@ -2731,13 +2731,19 @@ function calculateAverages(entryDictionary) {
         if (!averages[year][month]) {
           averages[year][month] = {};
         }
-        var days7 = runningAverageOverPriorDays({ year: year, month: month, day: day }, 7, entryDictionary);
-        var days28 = runningAverageOverPriorDays({ year: year, month: month, day: day }, 28, entryDictionary);
-        var days84 = runningAverageOverPriorDays({ year: year, month: month, day: day }, 84, entryDictionary);
         var fakeDate = dates.makeFakeDate(month, day);
         averages[year].dateSeries.push(fakeDate);
+        var days7 = runningAverageOverPriorDays({ year: year, month: month, day: day }, 7, entryDictionary);
+        if (!days7) {
+          return;
+        }
         averages[year].avgDays7.push(days7);
+        var days28 = runningAverageOverPriorDays({ year: year, month: month, day: day }, 28, entryDictionary);
+        if (!days28) {
+          return;
+        }
         averages[year].avgDays28.push(days28);
+        var days84 = runningAverageOverPriorDays({ year: year, month: month, day: day }, 84, entryDictionary);
         averages[year].avgDays84.push(days84);
       });
     });
