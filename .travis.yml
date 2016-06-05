@@ -11,3 +11,7 @@ matrix:
     - node_js: 5
 
 script: npm run ci
+
+addons:
+  code_climate:
+    repo_token: 4155f5c34bf061ab95c85ee7badd212515aa39bb52461f2d7ead67dd72864a59
