@@ -1,0 +1,20 @@
+engines:
+  eslint:
+    enabled: true
+  csslint:
+    enabled: true
+  duplication:
+    enabled: true
+    config:
+      languages:
+      - javascript
+
+ratings:
+  paths:
+  - src/**
+  - test/**
+
+exclude_paths:
+- build/**/*
+- node_modules/**/*
+- "**/vendor/**/*"
