@@ -2569,7 +2569,7 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function die() {
-  console.error("Uh oh! Expected Plotly to be globally available.");
+  global.console.error("Uh oh! Expected Plotly to be globally available.");
   html.insertFirst(html.findId("charts"), html.createP("Uh oh, can't find the graphing library! Try refreshing?"));
 }
 
@@ -2850,30 +2850,4 @@ global.showChart = function (_ref11) {
 };
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./gistApi":90,"./helpers/arrays":91,"./helpers/dates":92,"./helpers/html":93,"./helpers/objects":95,"./helpers/plotly":96,"./helpers/strings":97,"babel-runtime/core-js/object/assign":3,"babel-runtime/helpers/slicedToArray":7}],99:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _keys = require("babel-runtime/core-js/object/keys");
-
-var _keys2 = _interopRequireDefault(_keys);
-
-exports.keys = keys;
-exports.objectKeyValPairs = objectKeyValPairs;
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-function keys(obj) {
-  return (0, _keys2.default)(obj).sort();
-}
-
-function objectKeyValPairs(obj) {
-  return keys(obj).map(function (key) {
-    return [key, obj[key]];
-  });
-}
-
-},{"babel-runtime/core-js/object/keys":4}]},{},[90,98,99]);
+},{"./gistApi":90,"./helpers/arrays":91,"./helpers/dates":92,"./helpers/html":93,"./helpers/objects":95,"./helpers/plotly":96,"./helpers/strings":97,"babel-runtime/core-js/object/assign":3,"babel-runtime/helpers/slicedToArray":7}]},{},[90,98]);

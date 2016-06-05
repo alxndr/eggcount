@@ -7,7 +7,7 @@ import * as strings from "./helpers/strings";
 import * as dates from "./helpers/dates";
 
 function die() {
-  console.error("Uh oh! Expected Plotly to be globally available.");
+  global.console.error("Uh oh! Expected Plotly to be globally available.");
   html.insertFirst(
     html.findId("charts"),
     html.createP("Uh oh, can't find the graphing library! Try refreshing?")
