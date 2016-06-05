@@ -2573,16 +2573,28 @@ function die() {
   html.insertFirst(html.findId("charts"), html.createP("Uh oh, can't find the graphing library! Try refreshing?"));
 }
 
+// these are "global"
+var theFirstEntry = void 0;
+var theLastEntry = void 0;
+
 function dateOfFirstEntry(dateEntries) {
   var firstYear = objects.keys(dateEntries)[0];
   var firstMonth = objects.keys(dateEntries[firstYear])[0];
   var firstDay = objects.keys(dateEntries[firstYear][firstMonth])[0];
-  var d = new Date(firstYear, firstMonth - 1, firstDay);
-  d.setHours(1); // so other calculations of this date will be before...
-  return d;
+  var date = new Date(firstYear, firstMonth - 1, firstDay);
+  date.setHours(1); // so other calculations of this date will be before...
+  return date;
 }
 
-var theFirstEntry = void 0; // this is "global"
+function dateOfLastEntry(dateEntries) {
+  var lastYear = arrays.last(objects.keys(dateEntries));
+  var lastMonth = arrays.last(objects.keys(dateEntries[lastYear]));
+  var lastDay = arrays.last(objects.keys(dateEntries[lastYear][lastMonth]));
+  var date = new Date(lastYear, lastMonth - 1, lastDay);
+  date.setHours(1);
+  return date;
+}
+
 function runningAverageOverPriorDays(_ref, numDays, dateEntries) {
   var startingYear = _ref.year;
   var startingMonth = _ref.month;
@@ -2685,6 +2697,10 @@ function calculateAverages(entryDictionary) {
   var years = objects.keys(entryDictionary);
   var averages = {};
 
+  if (!theLastEntry) {
+    theLastEntry = dateOfLastEntry(entryDictionary);
+  }
+
   // iterates through all days between first and last data points, and
   // calculates a bunch of numbers, and
   // mutates the `averages` object, filling it up with the numbers.
@@ -2708,21 +2724,21 @@ function calculateAverages(entryDictionary) {
         if (date.getDate() !== dayInt) {
           return; // we auto-generated an invalid date, e.g. feb 31st
         }
-        // TODO return if we're past the last date or before the first date
+        if (date < theFirstEntry || date > theLastEntry) {
+          return;
+        }
         var day = strings.padZero(dayInt); // entry dictionary has zero-padded string as keys
         if (!averages[year][month]) {
           averages[year][month] = {};
         }
         var days7 = runningAverageOverPriorDays({ year: year, month: month, day: day }, 7, entryDictionary);
-        if (days7 !== null) {
-          var days28 = runningAverageOverPriorDays({ year: year, month: month, day: day }, 28, entryDictionary);
-          var days84 = runningAverageOverPriorDays({ year: year, month: month, day: day }, 84, entryDictionary);
-          var fakeDate = dates.makeFakeDate(month, day);
-          averages[year].dateSeries.push(fakeDate);
-          averages[year].avgDays7.push(days7);
-          averages[year].avgDays28.push(days28);
-          averages[year].avgDays84.push(days84);
-        }
+        var days28 = runningAverageOverPriorDays({ year: year, month: month, day: day }, 28, entryDictionary);
+        var days84 = runningAverageOverPriorDays({ year: year, month: month, day: day }, 84, entryDictionary);
+        var fakeDate = dates.makeFakeDate(month, day);
+        averages[year].dateSeries.push(fakeDate);
+        averages[year].avgDays7.push(days7);
+        averages[year].avgDays28.push(days28);
+        averages[year].avgDays84.push(days84);
       });
     });
   });

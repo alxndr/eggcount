@@ -14,16 +14,28 @@ function die() {
   );
 }
 
+// these are "global"
+let theFirstEntry;
+let theLastEntry;
+
 function dateOfFirstEntry(dateEntries) {
   const firstYear = objects.keys(dateEntries)[0];
   const firstMonth = objects.keys(dateEntries[firstYear])[0];
   const firstDay = objects.keys(dateEntries[firstYear][firstMonth])[0];
-  const d = new Date(firstYear, firstMonth-1, firstDay);
-  d.setHours(1); // so other calculations of this date will be before...
-  return d;
+  const date = new Date(firstYear, firstMonth-1, firstDay);
+  date.setHours(1); // so other calculations of this date will be before...
+  return date;
 }
 
-let theFirstEntry; // this is "global"
+function dateOfLastEntry(dateEntries) {
+  const lastYear = arrays.last(objects.keys(dateEntries));
+  const lastMonth = arrays.last(objects.keys(dateEntries[lastYear]));
+  const lastDay = arrays.last(objects.keys(dateEntries[lastYear][lastMonth]));
+  const date = new Date(lastYear, lastMonth-1, lastDay);
+  date.setHours(1);
+  return date;
+}
+
 function runningAverageOverPriorDays(
   { year: startingYear,
     month: startingMonth,
@@ -114,6 +126,10 @@ function calculateAverages(entryDictionary) {
   const years = objects.keys(entryDictionary);
   let averages = {};
 
+  if (!theLastEntry) {
+    theLastEntry = dateOfLastEntry(entryDictionary);
+  }
+
   // iterates through all days between first and last data points, and
   // calculates a bunch of numbers, and
   // mutates the `averages` object, filling it up with the numbers.
@@ -137,21 +153,21 @@ function calculateAverages(entryDictionary) {
         if (date.getDate() !== dayInt) {
           return; // we auto-generated an invalid date, e.g. feb 31st
         }
-        // TODO return if we're past the last date or before the first date
+        if (date < theFirstEntry || date > theLastEntry) {
+          return;
+        }
         const day = strings.padZero(dayInt); // entry dictionary has zero-padded string as keys
         if (!averages[year][month]) {
           averages[year][month] = {};
         }
         const days7 = runningAverageOverPriorDays({year, month, day}, 7, entryDictionary);
-        if (days7 !== null) {
-          const days28 = runningAverageOverPriorDays({year, month, day}, 28, entryDictionary);
-          const days84 = runningAverageOverPriorDays({year, month, day}, 84, entryDictionary);
-          const fakeDate = dates.makeFakeDate(month, day);
-          averages[year].dateSeries.push(fakeDate);
-          averages[year].avgDays7.push(days7);
-          averages[year].avgDays28.push(days28);
-          averages[year].avgDays84.push(days84);
-        }
+        const days28 = runningAverageOverPriorDays({year, month, day}, 28, entryDictionary);
+        const days84 = runningAverageOverPriorDays({year, month, day}, 84, entryDictionary);
+        const fakeDate = dates.makeFakeDate(month, day);
+        averages[year].dateSeries.push(fakeDate);
+        averages[year].avgDays7.push(days7);
+        averages[year].avgDays28.push(days28);
+        averages[year].avgDays84.push(days84);
       });
     });
   });
