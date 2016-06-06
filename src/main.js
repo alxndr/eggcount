@@ -133,16 +133,17 @@ function calculateAverages(entryDictionary) {
   // iterates through all days between first and last data points, and
   // calculates a bunch of numbers, and
   // mutates the `averages` object, filling it up with the numbers.
-  arrays.range(parseInt(years[0]), parseInt(years.slice(-1)[0])).map((yearInt) => {
+  arrays.range(Number(years[0]), Number(arrays.last(years))).map((yearInt) => {
     const year = yearInt.toString();
     if (!entryDictionary[year]) {
       return;
     }
-    averages[year] = {};
-    averages[year].dateSeries = [];
-    averages[year].avgDays7 = [];
-    averages[year].avgDays28 = [];
-    averages[year].avgDays84 = [];
+    averages[year] = {
+      dateSeries: [],
+      avgDays7: [],
+      avgDays28: [],
+      avgDays84: []
+    };
     arrays.range(1, 12).map((monthInt) => {
       const month = strings.padZero(monthInt); // entry dictionary has zero-padded string as keys
       if (!entryDictionary[year][month]) {
@@ -163,14 +164,8 @@ function calculateAverages(entryDictionary) {
         const fakeDate = dates.makeFakeDate(month, day);
         averages[year].dateSeries.push(fakeDate);
         const days7 = runningAverageOverPriorDays({year, month, day}, 7, entryDictionary);
-        if (!days7) {
-          return;
-        }
         averages[year].avgDays7.push(days7);
         const days28 = runningAverageOverPriorDays({year, month, day}, 28, entryDictionary);
-        if (!days28) {
-          return;
-        }
         averages[year].avgDays28.push(days28);
         const days84 = runningAverageOverPriorDays({year, month, day}, 84, entryDictionary);
         averages[year].avgDays84.push(days84);
@@ -194,7 +189,7 @@ function extractData(year, measure, data, opts) {
   return Object.assign(defaults, opts);
 }
 
-function sortInput(a, b) {
+export function sortInput(a, b) {
   const aDate = new Date(a.date.split("-"));
   const bDate = new Date(b.date.split("-"));
   if (aDate < bDate) {
