@@ -194,7 +194,7 @@ function extractData(year, measure, data, opts) {
   return Object.assign(defaults, opts);
 }
 
-function sortInput(a, b) {
+export function sortInput(a, b) {
   const aDate = new Date(a.date.split("-"));
   const bDate = new Date(b.date.split("-"));
   if (aDate < bDate) {
