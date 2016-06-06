@@ -163,14 +163,8 @@ function calculateAverages(entryDictionary) {
         const fakeDate = dates.makeFakeDate(month, day);
         averages[year].dateSeries.push(fakeDate);
         const days7 = runningAverageOverPriorDays({year, month, day}, 7, entryDictionary);
-        if (!days7) {
-          return;
-        }
         averages[year].avgDays7.push(days7);
         const days28 = runningAverageOverPriorDays({year, month, day}, 28, entryDictionary);
-        if (!days28) {
-          return;
-        }
         averages[year].avgDays28.push(days28);
         const days84 = runningAverageOverPriorDays({year, month, day}, 84, entryDictionary);
         averages[year].avgDays84.push(days84);
