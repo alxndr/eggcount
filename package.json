@@ -6,7 +6,7 @@
   "scripts": {
     "build": "browserify src/*.js --debug --transform [ babelify ] --plugin [minifyify --map build/bundle.js.map --output build/bundle.js.map ] --outfile build/bundle.js && echo built bundle.js",
     "ci": "npm run lint && npm run coverage && npm run coverage:report",
-    "coverage": "istanbul cover --root src/ --include-all-sources ./node_modules/.bin/_mocha -- --compilers js:babel-core/register --check-leaks \"test/**/*.js\"",
+    "coverage": "istanbul cover -v --root src/ --include-all-sources ./node_modules/.bin/_mocha -- --compilers js:babel-core/register --check-leaks \"test/**/*.js\"",
     "coverage:report": "CODECLIMATE_REPO_TOKEN=4155f5c34bf061ab95c85ee7badd212515aa39bb52461f2d7ead67dd72864a59 codeclimate-test-reporter < coverage/lcov.info",
     "lint": "eslint --config .eslintrc src/ test/",
     "test": "mocha    --compilers js:babel-core/register --check-leaks \"test/**/*.js\"",
