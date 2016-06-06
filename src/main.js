@@ -133,16 +133,17 @@ function calculateAverages(entryDictionary) {
   // iterates through all days between first and last data points, and
   // calculates a bunch of numbers, and
   // mutates the `averages` object, filling it up with the numbers.
-  arrays.range(parseInt(years[0]), parseInt(years.slice(-1)[0])).map((yearInt) => {
+  arrays.range(Number(years[0]), Number(arrays.last(years))).map((yearInt) => {
     const year = yearInt.toString();
     if (!entryDictionary[year]) {
       return;
     }
-    averages[year] = {};
-    averages[year].dateSeries = [];
-    averages[year].avgDays7 = [];
-    averages[year].avgDays28 = [];
-    averages[year].avgDays84 = [];
+    averages[year] = {
+      dateSeries: [],
+      avgDays7: [],
+      avgDays28: [],
+      avgDays84: []
+    };
     arrays.range(1, 12).map((monthInt) => {
       const month = strings.padZero(monthInt); // entry dictionary has zero-padded string as keys
       if (!entryDictionary[year][month]) {

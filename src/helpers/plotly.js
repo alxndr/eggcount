@@ -4,8 +4,7 @@ function layout(opts) {
     xaxis: {
       tickformat: "%b %d"
     },
-    yaxis: {
-    }
+    yaxis: {}
   }, opts);
 }
 
