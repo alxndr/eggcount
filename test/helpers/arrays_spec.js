@@ -26,4 +26,12 @@ describe("arrays", function() {
   });
 
 
+  describe("sortByFirstElement", function() {
+    it("sorts by first element", function() {
+      const arr = [[1], [0], [5], [10], [1]];
+      expect(arr.sort(arrays.sortByFirstElement)).to.deep.equal([[0], [1], [1], [5], [10]]);
+    });
+  });
+
+
 });
