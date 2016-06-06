@@ -3,16 +3,6 @@ export function last(array) {
   return array.slice(-1)[0];
 }
 
-export function sortByFirstElement([a], [b]) {
-  if (a < b) {
-    return -1;
-  }
-  if (a > b) {
-    return 1;
-  }
-  return 0;
-}
-
 export function range(start, end) {
   return rangeExclusive(start, end + 1);
 }
@@ -23,4 +13,14 @@ function rangeExclusive(start, end) {
   return Array
     .apply(0, Array(end - start))
     .map((element, index) => index + start);
+}
+
+export function sortByFirstElement([a], [b]) {
+  if (a < b) {
+    return -1;
+  }
+  if (a > b) {
+    return 1;
+  }
+  return 0;
 }
