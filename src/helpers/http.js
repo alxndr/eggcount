@@ -10,3 +10,7 @@ export function checkStatus(response) {
 export function extractJson(response) {
   return response.json();
 }
+
+export function fetchJson(url) {
+  return fetch(url).then(checkStatus).then(extractJson);
+}

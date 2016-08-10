@@ -1,41 +1,29 @@
-import { fetchFileInGist } from "./gistApi"
-import plotly from "./helpers/plotly";
-import * as html from "./helpers/html";
-import * as arrays from "./helpers/arrays";
-import * as objects from "./helpers/objects";
-import * as strings from "./helpers/strings";
-import * as dates from "./helpers/dates";
+const GIST_ID = "c5cb1b4ceaf938d8801b60fd241fabf9";
+const GIST_FILENAME = "eggcount.json";
 
-function die() {
-  global.console.error("Uh oh! Expected Plotly to be globally available.");
-  html.insertFirst(
-    html.findId("charts"),
-    html.createP("Uh oh, can't find the graphing library! Try refreshing?")
-  );
-}
-
-// these are "global"
-let theFirstEntry;
-let theLastEntry;
+const {
+  checkStatus,
+  dayDifference,
+  extractJson,
+  keys,
+  last,
+  objectKeyValPairs,
+  padZero,
+  range,
+  sortByFirstElement,
+  sum
+} = require("./utilities.js");
 
 function dateOfFirstEntry(dateEntries) {
-  const firstYear = objects.keys(dateEntries)[0];
-  const firstMonth = objects.keys(dateEntries[firstYear])[0];
-  const firstDay = objects.keys(dateEntries[firstYear][firstMonth])[0];
-  const date = new Date(firstYear, firstMonth-1, firstDay);
-  date.setHours(1); // so other calculations of this date will be before...
-  return date;
+  const firstYear = keys(dateEntries)[0];
+  const firstMonth = keys(dateEntries[firstYear])[0];
+  const firstDay = keys(dateEntries[firstYear][firstMonth])[0];
+  const d = new Date(firstYear, firstMonth-1, firstDay);
+  d.setHours(1); // so other calculations of this date will be before...
+  return d;
 }
 
-function dateOfLastEntry(dateEntries) {
-  const lastYear = arrays.last(objects.keys(dateEntries));
-  const lastMonth = arrays.last(objects.keys(dateEntries[lastYear]));
-  const lastDay = arrays.last(objects.keys(dateEntries[lastYear][lastMonth]));
-  const date = new Date(lastYear, lastMonth-1, lastDay);
-  date.setHours(1);
-  return date;
-}
-
+let theFirstEntry; // this is "global"
 function runningAverageOverPriorDays(
   { year: startingYear,
     month: startingMonth,
@@ -58,8 +46,8 @@ function runningAverageOverPriorDays(
   let dataToAverage = [];
   while (dateInQuestion <= referenceDate) {
     const year = (dateInQuestion.getYear() + 1900).toString();
-    const month = strings.padZero(dateInQuestion.getMonth() + 1);
-    const day = strings.padZero(dateInQuestion.getDate());
+    const month = padZero(dateInQuestion.getMonth() + 1);
+    const day = padZero(dateInQuestion.getDate());
     if (dateEntries[year] && dateEntries[year][month]) {
       const dayData = dateEntries[year][month][day];
       if (dayData) {
@@ -72,103 +60,102 @@ function runningAverageOverPriorDays(
   if (dataToAverage.length === 0) {
     return null;
   }
-  return dataToAverage.reduce((sum, n) => sum + n) / numDays;
+  return dataToAverage.reduce(sum) / numDays;
 }
 
-function recordStuff(data, count, month, day) {
-  // need to normalize all dates to same year,
-  // so charting lib places all e.g. Jul 13s in the same X-axis position
-  data.dateSeries.push(dates.makeFakeDate(month, day));
-  data.rawCount.push(count);
-  return data;
-}
-
-function emptyCounts() {
-  return {
-    dateSeries: [],
-    rawCount: []
-  };
-}
-
-function buildDateAndCountObjects(monthAcc, [month, monthData]) {
-  const {dateSeries, rawCount} =
-    objects.objectKeyValPairs(monthData)
-      .sort(arrays.sortByFirstElement)
-      .reduce(
-        (dayAcc, [day, dayData]) => recordStuff(dayAcc, dayData.count, month, day),
-        emptyCounts()
-      );
-  return {
-    dateSeries: monthAcc.dateSeries.concat(dateSeries),
-    rawCount: monthAcc.rawCount.concat(rawCount)
-  };
+const FAKE_YEAR = 1970;
+function makeFakeDate(month, day) {
+  return new Date(FAKE_YEAR, month-1, day);
 }
 
 function buildSeparateDataSets(yearAcc, [year, yearData]) {
   /* feed through a .reduce(); will return an object shaped like...
      {
-       2014: {
-         dateSeries: [...]
-         rawCount: [...]
-       averages...
-       },
-       ...
+     2014: {
+     dateSeries: [...]
+     rawCount: [...]
+     averages...
+     },
+     ...
      }
    */
-  yearAcc[year] =
-    objects.objectKeyValPairs(yearData)
-      .sort(arrays.sortByFirstElement)
-      .reduce(buildDateAndCountObjects, emptyCounts());
+  const transformedYearData =
+    objectKeyValPairs(yearData)
+      .sort(sortByFirstElement)
+      .reduce((monthAcc, [month, monthData]) => {
+        const transformedMonthData =
+        objectKeyValPairs(monthData)
+          .sort(sortByFirstElement)
+          .reduce((dayAcc, [day, dayData]) => {
+            // need to normalize all dates to same year,
+            // so charting lib places all e.g. Jul 13s in the same X-axis position
+            dayAcc.dateSeries.push(makeFakeDate(month, day));
+            dayAcc.rawCount.push(dayData.count);
+            return dayAcc;
+          }, newEmptyDataThing())
+        ;
+        return {
+          dateSeries: monthAcc.dateSeries.concat(transformedMonthData.dateSeries),
+          rawCount: monthAcc.rawCount.concat(transformedMonthData.rawCount)
+        };
+      }, newEmptyDataThing())
+    ;
+  yearAcc[year] = transformedYearData;
   return yearAcc;
 }
 
-function calculateAverages(entryDictionary) {
-  const years = objects.keys(entryDictionary);
-  let averages = {};
+function newEmptyDataThing() {
+  return {
+    dateSeries: [],
+    rawCount: [],
+    avgDays7: [],
+    avgDays28: [],
+    avgDays84: []
+  };
+}
 
-  if (!theLastEntry) {
-    theLastEntry = dateOfLastEntry(entryDictionary);
-  }
+function calculateAverages(entryDictionary) {
+  const years = keys(entryDictionary);
+  let averages = {};
 
   // iterates through all days between first and last data points, and
   // calculates a bunch of numbers, and
   // mutates the `averages` object, filling it up with the numbers.
-  arrays.range(Number(years[0]), Number(arrays.last(years))).map((yearInt) => {
+  range(parseInt(years[0]), parseInt(years.slice(-1)[0])).map((yearInt) => {
     const year = yearInt.toString();
     if (!entryDictionary[year]) {
       return;
     }
-    averages[year] = {
-      dateSeries: [],
-      avgDays7: [],
-      avgDays28: [],
-      avgDays84: []
-    };
-    arrays.range(1, 12).map((monthInt) => {
-      const month = strings.padZero(monthInt); // entry dictionary has zero-padded string as keys
+    averages[year] = {};
+    averages[year].dateSeries = [];
+    averages[year].avgDays7 = [];
+    averages[year].avgDays28 = [];
+    averages[year].avgDays84 = [];
+    range(1, 12).map((monthInt) => {
+      const month = padZero(monthInt); // entry dictionary has zero-padded string as keys
       if (!entryDictionary[year][month]) {
         return;
       }
-      arrays.range(1, 31).map((dayInt) => {
+      range(1, 31).map((dayInt) => {
         const date = new Date(yearInt, monthInt - 1, dayInt);
         if (date.getDate() !== dayInt) {
           return; // we auto-generated an invalid date, e.g. feb 31st
         }
-        if (date < theFirstEntry || date > theLastEntry) {
-          return;
-        }
-        const day = strings.padZero(dayInt); // entry dictionary has zero-padded string as keys
+        // TODO return if we're past the last date or before the first date
+        const day = padZero(dayInt); // entry dictionary has zero-padded string as keys
         if (!averages[year][month]) {
           averages[year][month] = {};
         }
-        const fakeDate = dates.makeFakeDate(month, day);
-        averages[year].dateSeries.push(fakeDate);
         const days7 = runningAverageOverPriorDays({year, month, day}, 7, entryDictionary);
-        averages[year].avgDays7.push(days7);
-        const days28 = runningAverageOverPriorDays({year, month, day}, 28, entryDictionary);
-        averages[year].avgDays28.push(days28);
-        const days84 = runningAverageOverPriorDays({year, month, day}, 84, entryDictionary);
-        averages[year].avgDays84.push(days84);
+        if (days7 !== null) {
+          const days28 = runningAverageOverPriorDays({year, month, day}, 28, entryDictionary);
+          const days84 = runningAverageOverPriorDays({year, month, day}, 84, entryDictionary);
+          const fakeDate = makeFakeDate(month, day);
+          averages[year].dateSeries.push(fakeDate);
+          averages[year].avgDays7.push(days7);
+          averages[year].avgDays28.push(days28);
+          averages[year].avgDays84.push(days84);
+        }
       });
     });
   });
@@ -184,12 +171,53 @@ function extractData(year, measure, data, opts) {
     name: year.toString(),
     type: "scatter",
     x: data[year].dateSeries,
-    y: data[year][measure]
+    y: data[year][measure],
   };
   return Object.assign(defaults, opts);
 }
 
-export function sortInput(a, b) {
+function bindExtractData(data) {
+  return function(year, metric, opts) {
+    return extractData(year, metric, data, opts);
+  };
+}
+
+function plotLayout(opts) {
+  return Object.assign({
+    type: "date",
+    xaxis: {
+      tickformat: "%b %d",
+    },
+    yaxis: {
+    },
+  }, opts);
+}
+
+function die() {
+  console.error("Uh oh! Expected Plotly to be globally available.");
+  const p = document.createElement("p"); // this is what JSX is for...
+  p.appendChild(document.createTextNode("Uh oh, can't find the graphing library! Try refreshing?"));
+  const charts = document.getElementById("charts");
+  const firstChart = charts.firstChild;
+  charts.insertBefore(p, firstChart);
+}
+
+function removeNodesInNodelist(nodelist) {
+  let node;
+  while (node = nodelist[nodelist.length - 1]) { // need to recalculate placeholdersNodelist.length on each iteration
+    node.remove();
+  }
+}
+
+function appendLink(url) {
+  const charts = document.getElementById("charts");
+  const link = document.createElement("a");
+  link.appendChild(document.createTextNode("data source"));
+  link.href = url;
+  charts.appendChild(link);
+}
+
+function sortInput(a, b) {
   const aDate = new Date(a.date.split("-"));
   const bDate = new Date(b.date.split("-"));
   if (aDate < bDate) {
@@ -198,14 +226,22 @@ export function sortInput(a, b) {
   return 1;
 }
 
+function ymdFromDate(date) {
+  return [
+    date.getYear() + 1900,
+    date.getMonth() + 1,
+    date.getDate()
+  ].join("-");
+}
+
 function constructDict(data) {
   const infilledData = data.sort(sortInput).reduce(function(smoothed, {date, count}) {
     if (!smoothed.length) { // the first measurement. no need to process any further.
       smoothed.push({date, count});
       return smoothed;
     }
-    const lastMeasurement = arrays.last(smoothed);
-    const difference = dates.dayDifference(lastMeasurement.date, date);
+    const lastMeasurement = last(smoothed);
+    const difference = dayDifference(lastMeasurement.date, date);
     if (difference <= 1) {
       smoothed.push({date, count});
     } else {
@@ -214,7 +250,7 @@ function constructDict(data) {
       for (let i = 1; i < difference; i++) {
         const missingDate = new Date(lastMeasurementDate);
         missingDate.setDate(lastMeasurementDate.getDate() + i);
-        smoothed.push({date: dates.ymdFromDate(missingDate), count: dailyAverage});
+        smoothed.push({date: ymdFromDate(missingDate), count: dailyAverage});
       }
       smoothed.push({date, count: dailyAverage});
     }
@@ -233,42 +269,65 @@ function constructDict(data) {
   }, {});
 }
 
-function buildConfigsForPlotly({rawData, averages}) {
-  const transformedData = objects.objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
-  return objects.keys(rawData).reduce(
-    (dataToChart, year) => {
-      const countChartOptions = { mode: "markers", opacity: 0.3, marker: { size: 15 } };
-      const averagesChartsOptions = { mode: "line" };
-      dataToChart.dataForCollectedChart.push(extractData(year, "rawCount", transformedData, countChartOptions));
-      dataToChart.dataFor7dayChart.push(extractData(year, "avgDays7", averages, averagesChartsOptions));
-      dataToChart.dataFor28dayChart.push(extractData(year, "avgDays28", averages, averagesChartsOptions));
-      dataToChart.dataFor84dayChart.push(extractData(year, "avgDays84", averages, averagesChartsOptions));
-      return dataToChart;
-    },
-    {dataForCollectedChart:[], dataFor7dayChart:[], dataFor28dayChart:[], dataFor84dayChart:[]}
-  );
-}
-
-global.showChart = function({gistId, filename}) {
+global.showChart = function() {
   if (!global.Plotly) {
     die();
     return false;
   }
-  const {newPlot} = global.Plotly;
-  fetchFileInGist(filename, gistId)
-    .then(({fileUrl, data}) => {
-      html.findId("charts").appendChild(html.createLink({text: "data source", href: fileUrl}));
-      return data;
+  return fetch(`https://api.github.com/gists/${GIST_ID}`)
+    .then(checkStatus)
+    .then(extractJson)
+    .then(({files, html_url}) => {
+      appendLink(html_url);
+      return fetch(files[GIST_FILENAME].raw_url);
     })
+    .then(checkStatus)
+    .then(extractJson)
     .then(constructDict)
-    .then(calculateAverages) // need to calculate averages only once all data is collected
-    .then(buildConfigsForPlotly)
-    .then(({dataForCollectedChart, dataFor7dayChart, dataFor28dayChart, dataFor84dayChart}) => {
-      html.removeNodesInNodelist(html.findId("charts").getElementsByClassName("placeholder"));
-      const plotlyConfig = {displayModeBar: false};
-      newPlot("raw", dataForCollectedChart, plotly.layout({title: "eggs collected per day"}) , plotlyConfig);
-      newPlot("1wk", dataFor7dayChart     , plotly.layout({title: "1-week rolling average"}) , plotlyConfig);
-      newPlot("1mo", dataFor28dayChart    , plotly.layout({title: "1-month rolling average"}), plotlyConfig);
-      newPlot("3mo", dataFor84dayChart    , plotly.layout({title: "3-month rolling average"}), plotlyConfig);
-    });
+    .then((data) => calculateAverages(data)) // need to calculate averages only once all data is collected
+    .then(({rawData, averages}) => {
+      const transformedData = objectKeyValPairs(rawData).reduce(buildSeparateDataSets, {});
+      const years = keys(transformedData);
+      const boundExtractData = bindExtractData(transformedData);
+
+      // TODO only years.map() once; map each year's data to the transformations it needs...
+
+      const dataForCollectedChart =
+      years.map((year) => boundExtractData(year, "rawCount", { mode: "markers", opacity: 0.3, marker: { size: 15 } }));
+
+      const dataFor7dayChart =
+      years.map((year) => extractData(year, "avgDays7", averages, { mode: "line" }));
+
+      return [
+        {
+          domId: "raw",
+          data: dataForCollectedChart,
+          layout: plotLayout({title: "eggs collected per day"}),
+          config: {displayModeBar: false}
+        },
+        {
+          domId: "1wk",
+          data: dataFor7dayChart,
+          layout: plotLayout({title: "1-week rolling average"}),
+          config: {displayModeBar: false}
+        },
+        {
+          domId: "1mo",
+          data: years.map((year) => extractData(year, "avgDays28", averages, { mode: "line" })),
+          layout: plotLayout({title: "1-month rolling average"}),
+          config: {displayModeBar: false}
+        },
+        {
+          domId: "3mo",
+          data: years.map((year) => extractData(year, "avgDays84", averages, { mode: "line" })),
+          layout: plotLayout({title: "3-month rolling average"}),
+          config: {displayModeBar: false}
+        },
+      ];
+    })
+    .then((configsForPlotly) => {
+      removeNodesInNodelist(document.getElementById("charts").getElementsByClassName("placeholder"));
+      configsForPlotly.map(({domId, data, layout, config}) => global.Plotly.newPlot(domId, data, layout, config));
+    })
+  ; // fetch pipeline
 };
